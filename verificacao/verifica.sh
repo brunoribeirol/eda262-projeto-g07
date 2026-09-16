@@ -1,105 +1,107 @@
 #!/usr/bin/env bash
 #
-# Script de aceitacao -- EDA262 Parte 1 (AV1), grupo g07.
+# Acceptance script -- EDA262 Part 1 (AV1), group g07.
 #
-# Imprime PASSA ou FALHA para cada criterio do guia do projeto e termina com
-# codigo 0 somente se todos os criterios passarem.
+# Prints PASSA or FALHA per criterion and exits 0 only if every criterion passes.
+# Criterion labels and the PASSA/FALHA verdicts are intentionally kept in Portuguese:
+# they are the evaluator-facing contract defined by the course guide. Everything
+# else in this file is English, like the rest of the codebase.
 #
-# Uso:
-#   verificacao/verifica.sh                      # repositorio + recursos na AWS
-#   verificacao/verifica.sh --somente-repo       # apenas criterios estaticos, sem AWS
-#   verificacao/verifica.sh --profile NOME       # perfil AWS especifico
+# Usage:
+#   verificacao/verifica.sh                  # repository + AWS resources
+#   verificacao/verifica.sh --repo-only      # static criteria only, no AWS
+#   verificacao/verifica.sh --profile NAME   # specific AWS profile
 #
-# Requisitos: bash, grep, jq. A verificacao na AWS exige ainda o AWS CLI autenticado.
+# Requires: bash, grep, jq. AWS criteria additionally require an authenticated AWS CLI.
 
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${REPO_ROOT}"
 
-PREFIXO="${EDA262_PREFIXO:-eda262-g07}"
+PREFIX="${EDA262_PREFIX:-eda262-g07}"
 GLUE_DB="${EDA262_GLUE_DB:-eda262_g07_kev}"
-TABELA="${EDA262_TABELA:-kev_vulnerabilities}"
-SOMENTE_REPO=0
-PERFIL=""
+TABLE="${EDA262_TABLE:-kev_vulnerabilities}"
+REPO_ONLY=0
+PROFILE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --somente-repo) SOMENTE_REPO=1; shift ;;
-    --profile)      PERFIL="${2:?--profile exige um valor}"; shift 2 ;;
+    --repo-only) REPO_ONLY=1; shift ;;
+    --profile)      PROFILE="${2:?--profile requires a value}"; shift 2 ;;
     -h|--help)      sed -n '2,16p' "${BASH_SOURCE[0]}"; exit 0 ;;
-    *) echo "argumento desconhecido: $1" >&2; exit 2 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
 
 if [[ -t 1 ]]; then
-  VERDE=$'\033[32m'; VERMELHO=$'\033[31m'; CINZA=$'\033[90m'; NEGRITO=$'\033[1m'; FIM=$'\033[0m'
+  GREEN=$'\033[32m'; RED=$'\033[31m'; GRAY=$'\033[90m'; BOLD=$'\033[1m'; RESET=$'\033[0m'
 else
-  VERDE=''; VERMELHO=''; CINZA=''; NEGRITO=''; FIM=''
+  GREEN=''; RED=''; GRAY=''; BOLD=''; RESET=''
 fi
 
-TOTAL=0; APROVADOS=0; REPROVADOS=0
+TOTAL=0; PASSED=0; FAILED=0
 
-# criterio "<descricao>" <comando...>
-# Executa o comando silenciosamente e imprime PASSA/FALHA.
-criterio() {
-  local descricao="$1"; shift
+# criterion "<label>" <command...>
+# Runs the command silently and prints the PASSA/FALHA verdict.
+criterion() {
+  local label="$1"; shift
   TOTAL=$(( TOTAL + 1 ))
   if "$@" >/dev/null 2>&1; then
-    printf '%sPASSA%s  %s\n' "${VERDE}" "${FIM}" "${descricao}"
-    APROVADOS=$(( APROVADOS + 1 ))
+    printf '%sPASSA%s  %s\n' "${GREEN}" "${RESET}" "${label}"
+    PASSED=$(( PASSED + 1 ))
   else
-    printf '%sFALHA%s  %s\n' "${VERMELHO}" "${FIM}" "${descricao}"
-    REPROVADOS=$(( REPROVADOS + 1 ))
+    printf '%sFALHA%s  %s\n' "${RED}" "${RESET}" "${label}"
+    FAILED=$(( FAILED + 1 ))
   fi
 }
 
-secao() { printf '\n%s%s%s\n' "${NEGRITO}" "$1" "${FIM}"; }
+section() { printf '\n%s%s%s\n' "${BOLD}" "$1" "${RESET}"; }
 
-# --- helpers usados pelos criterios --------------------------------------------
+# --- helpers used by the criteria --------------------------------------------
 
 aws_cli() {
-  if [[ -n "${PERFIL}" ]]; then aws --profile "${PERFIL}" "$@"; else aws "$@"; fi
+  if [[ -n "${PROFILE}" ]]; then aws --profile "${PROFILE}" "$@"; else aws "$@"; fi
 }
 
-# Nenhum recurso de Glue Crawler pode existir no Terraform (exigencia do guia).
-sem_crawler() {
+# No Glue Crawler resource may exist in the Terraform (course guide requirement).
+no_crawler_in_code() {
   ! grep -rIlE '^\s*resource\s+"aws_glue_crawler"' parte-1/ 2>/dev/null | grep -q .
 }
 
-# O schema precisa estar declarado em IaC: procuramos colunas declaradas na tabela.
-schema_declarado_em_iac() {
+# The schema must be declared in IaC: look for explicitly declared table columns.
+schema_declared_in_iac() {
   grep -rqE 'dynamic\s+"columns"|^\s*columns\s*\{' parte-1/modules/ 2>/dev/null \
     && grep -rq 'trusted_columns' parte-1/modules/ 2>/dev/null
 }
 
-backend_remoto_declarado() {
+remote_backend_declared() {
   grep -rq 'backend "s3"' parte-1/*.tf 2>/dev/null \
     && grep -rq 'aws_dynamodb_table' parte-1/bootstrap/*.tf 2>/dev/null
 }
 
-modulo_terraform() {
+packaged_as_module() {
   [[ -d parte-1/modules/data-lake ]] && grep -rq 'source\s*=\s*"\./modules/data-lake"' parte-1/*.tf 2>/dev/null
 }
 
-workspace_em_uso() {
+workspace_in_use() {
   grep -rq 'terraform\.workspace' parte-1/*.tf 2>/dev/null
 }
 
-tags_obrigatorias() {
+mandatory_tags_declared() {
   grep -rq 'turma\s*=\s*"eda262"' parte-1/ 2>/dev/null \
     && grep -rq 'grupo\s*=\s*"g07"' parte-1/ 2>/dev/null \
     && grep -rq 'projeto\s*=\s*"engenharia-de-dados"' parte-1/ 2>/dev/null
 }
 
-decisoes_com_numeros() {
-  # O guia exige numeros medidos; prosa sozinha nao pontua.
+decisions_have_numbers() {
+  # The guide requires measured numbers; prose alone does not score.
   [[ -f DECISOES.md ]] && grep -qE '[0-9]' DECISOES.md \
     && grep -qiE 'grain|granularidade' DECISOES.md \
     && grep -qiE 'custo' DECISOES.md
 }
 
-custo_medido() {
+cost_measured() {
   local arquivo="docs/evidence/query-cost.json"
   [[ -f "${arquivo}" ]] || return 1
   local custo bytes
@@ -108,106 +110,107 @@ custo_medido() {
   [[ -n "${custo}" && -n "${bytes}" ]]
 }
 
-grain_comprovada() {
+grain_proven() {
   local arquivo="docs/evidence/query-cost.json"
   [[ -f "${arquivo}" ]] || return 1
   [[ "$(jq -r '.grain_check.duplicate_rows' "${arquivo}")" == "0" ]]
 }
 
-bucket_existe()   { aws_cli s3api head-bucket --bucket "$1"; }
-glue_db_existe()  { aws_cli glue get-database --name "${GLUE_DB}"; }
-workgroup_existe(){ aws_cli athena get-work-group --work-group "${PREFIXO}-wg"; }
+bucket_exists()   { aws_cli s3api head-bucket --bucket "$1"; }
+glue_db_exists()  { aws_cli glue get-database --name "${GLUE_DB}"; }
+workgroup_exists(){ aws_cli athena get-work-group --work-group "${PREFIX}-wg"; }
 
-tabela_existe_com_grain() {
+table_declares_grain() {
   local saida
-  saida="$(aws_cli glue get-table --database-name "${GLUE_DB}" --name "${TABELA}" --output json)" || return 1
+  saida="$(aws_cli glue get-table --database-name "${GLUE_DB}" --name "${TABLE}" --output json)" || return 1
   jq -e '.Table.Parameters.grain == "one row per cve_id"' <<< "${saida}" >/dev/null
 }
 
-tabela_sem_crawler_na_aws() {
-  # Uma tabela criada por Crawler carrega o parametro UPDATED_BY_CRAWLER.
+table_not_crawler_built() {
+  # A Crawler-built table carries the UPDATED_BY_CRAWLER parameter.
   local saida
-  saida="$(aws_cli glue get-table --database-name "${GLUE_DB}" --name "${TABELA}" --output json)" || return 1
+  saida="$(aws_cli glue get-table --database-name "${GLUE_DB}" --name "${TABLE}" --output json)" || return 1
   ! jq -e '.Table.Parameters.UPDATED_BY_CRAWLER // empty' <<< "${saida}" >/dev/null
 }
 
-nenhum_crawler_na_conta() {
+no_crawler_in_account() {
   local saida
   saida="$(aws_cli glue list-crawlers --output json)" || return 1
-  ! jq -e --arg p "${PREFIXO}" '.CrawlerNames[]? | select(startswith($p))' <<< "${saida}" >/dev/null
+  ! jq -e --arg p "${PREFIX}" '.CrawlerNames[]? | select(startswith($p))' <<< "${saida}" >/dev/null
 }
 
-dados_carregados() {
+data_loaded() {
   aws_cli s3api head-object \
-    --bucket "${PREFIXO}-lake-trusted" \
-    --key "${TABELA}/kev_vulnerabilities.json"
+    --bucket "${PREFIX}-lake-trusted" \
+    --key "${TABLE}/kev_vulnerabilities.json"
 }
 
-tags_aplicadas_na_aws() {
+tags_applied_in_aws() {
   local saida
-  saida="$(aws_cli s3api get-bucket-tagging --bucket "${PREFIXO}-lake-raw" --output json)" || return 1
+  saida="$(aws_cli s3api get-bucket-tagging --bucket "${PREFIX}-lake-raw" --output json)" || return 1
   jq -e '
     (.TagSet | map({(.Key): .Value}) | add) as $t
     | $t.turma == "eda262" and $t.grupo == "g07" and $t.projeto == "engenharia-de-dados"
   ' <<< "${saida}" >/dev/null
 }
 
-# --- criterios -----------------------------------------------------------------
+# --- criteria -----------------------------------------------------------------
 
-printf '%sVerificacao EDA262 -- Parte 1 (AV1) -- grupo g07%s\n' "${NEGRITO}" "${FIM}"
-printf '%srepositorio: %s%s\n' "${CINZA}" "${REPO_ROOT}" "${FIM}"
+printf '%sVerificacao EDA262 -- Parte 1 (AV1) -- grupo g07%s\n' "${BOLD}" "${RESET}"
+printf '%srepositorio: %s%s\n' "${GRAY}" "${REPO_ROOT}" "${RESET}"
 
-secao "1. Estrutura do repositorio"
-criterio "Terraform da Parte 1 em parte-1/ na raiz do repositorio" test -d parte-1
-criterio "DECISOES.md na raiz do repositorio"                     test -f DECISOES.md
-criterio "README.md com instrucoes de deploy/destroy"             test -f README.md
-criterio "Script de aceitacao em verificacao/verifica.sh"         test -x verificacao/verifica.sh
+section "1. Estrutura do repositorio"
+criterion "Terraform da Parte 1 em parte-1/ na raiz do repositorio" test -d parte-1
+criterion "DECISOES.md na raiz do repositorio"                     test -f DECISOES.md
+criterion "README.md com instrucoes de deploy/destroy"             test -f README.md
+criterion "Script de aceitacao em verificacao/verifica.sh"         test -x verificacao/verifica.sh
+criterion "Apresentacao apresentacao-parte-1-g07.pdf gerada"       test -f apresentacao-parte-1-g07.pdf
 
-secao "2. Infraestrutura como codigo"
-criterio "Terraform empacotado como modulo"                       modulo_terraform
-criterio "Backend remoto declarado (S3 + DynamoDB)"               backend_remoto_declarado
-criterio "Workspace do Terraform em uso"                          workspace_em_uso
-criterio "Schema declarado em IaC (colunas explicitas)"           schema_declarado_em_iac
-criterio "Nenhum recurso aws_glue_crawler no codigo"              sem_crawler
-criterio "Tags obrigatorias declaradas (turma/grupo/projeto)"     tags_obrigatorias
+section "2. Infraestrutura como codigo"
+criterion "Terraform empacotado como modulo"                       packaged_as_module
+criterion "Backend remoto declarado (S3 + DynamoDB)"               remote_backend_declared
+criterion "Workspace do Terraform em uso"                          workspace_in_use
+criterion "Schema declarado em IaC (colunas explicitas)"           schema_declared_in_iac
+criterion "Nenhum recurso aws_glue_crawler no codigo"              no_crawler_in_code
+criterion "Tags obrigatorias declaradas (turma/grupo/projeto)"     mandatory_tags_declared
 
-secao "3. Decisoes e evidencias"
-criterio "DECISOES.md cobre granularidade e custo com numeros"    decisoes_com_numeros
-criterio "Custo por query medido e registrado"                    custo_medido
-criterio "Granularidade comprovada (0 cve_id duplicado)"          grain_comprovada
-criterio "Resultado da consulta de negocio salvo"                 test -f docs/evidence/business-question-result.csv
+section "3. Decisoes e evidencias"
+criterion "DECISOES.md cobre granularidade e custo com numeros"    decisions_have_numbers
+criterion "Custo por query medido e registrado"                    cost_measured
+criterion "Granularidade comprovada (0 cve_id duplicado)"          grain_proven
+criterion "Resultado da consulta de negocio salvo"                 test -f docs/evidence/business-question-result.csv
 
-if [[ "${SOMENTE_REPO}" -eq 1 ]]; then
-  printf '\n%smodo --somente-repo: criterios de AWS nao verificados%s\n' "${CINZA}" "${FIM}"
+if [[ "${REPO_ONLY}" -eq 1 ]]; then
+  printf '\n%smodo --repo-only: criterios de AWS nao verificados%s\n' "${GRAY}" "${RESET}"
 else
-  secao "4. Recursos provisionados na AWS"
+  section "4. Recursos provisionados na AWS"
   if ! aws_cli sts get-caller-identity >/dev/null 2>&1; then
-    printf '%sFALHA%s  Credenciais AWS validas (necessarias para os criterios 4.x)\n' "${VERMELHO}" "${FIM}"
-    printf '%s       use --somente-repo para verificar apenas o repositorio%s\n' "${CINZA}" "${FIM}"
-    TOTAL=$(( TOTAL + 1 )); REPROVADOS=$(( REPROVADOS + 1 ))
+    printf '%sFALHA%s  Credenciais AWS validas (necessarias para os criterios 4.x)\n' "${RED}" "${RESET}"
+    printf '%s       use --repo-only para verificar apenas o repositorio%s\n' "${GRAY}" "${RESET}"
+    TOTAL=$(( TOTAL + 1 )); FAILED=$(( FAILED + 1 ))
   else
-    criterio "Bucket da camada raw (${PREFIXO}-lake-raw)"          bucket_existe "${PREFIXO}-lake-raw"
-    criterio "Bucket da camada trusted (${PREFIXO}-lake-trusted)"  bucket_existe "${PREFIXO}-lake-trusted"
-    criterio "Bucket de resultados do Athena"                      bucket_existe "${PREFIXO}-athena-results"
-    criterio "Banco no Glue Data Catalog (${GLUE_DB})"             glue_db_existe
-    criterio "Tabela trusted com granularidade declarada"          tabela_existe_com_grain
-    criterio "Tabela nao foi criada por Crawler"                   tabela_sem_crawler_na_aws
-    criterio "Nenhum Glue Crawler provisionado na conta"           nenhum_crawler_na_conta
-    criterio "Athena WorkGroup (${PREFIXO}-wg)"                    workgroup_existe
-    criterio "Dados carregados na camada trusted"                  dados_carregados
-    criterio "Tags obrigatorias aplicadas nos recursos"            tags_aplicadas_na_aws
+    criterion "Bucket da camada raw (${PREFIX}-lake-raw)"          bucket_exists "${PREFIX}-lake-raw"
+    criterion "Bucket da camada trusted (${PREFIX}-lake-trusted)"  bucket_exists "${PREFIX}-lake-trusted"
+    criterion "Bucket de resultados do Athena"                      bucket_exists "${PREFIX}-athena-results"
+    criterion "Banco no Glue Data Catalog (${GLUE_DB})"             glue_db_exists
+    criterion "Tabela trusted com granularidade declarada"          table_declares_grain
+    criterion "Tabela nao foi criada por Crawler"                   table_not_crawler_built
+    criterion "Nenhum Glue Crawler provisionado na conta"           no_crawler_in_account
+    criterion "Athena WorkGroup (${PREFIX}-wg)"                    workgroup_exists
+    criterion "Dados carregados na camada trusted"                  data_loaded
+    criterion "Tags obrigatorias aplicadas nos recursos"            tags_applied_in_aws
   fi
 fi
 
-# --- resumo --------------------------------------------------------------------
-printf '\n%s%s%s\n' "${NEGRITO}" "$(printf '%.0s-' {1..60})" "${FIM}"
+# --- summary --------------------------------------------------------------------
+printf '\n%s%s%s\n' "${BOLD}" "$(printf '%.0s-' {1..60})" "${RESET}"
 printf 'Resultado: %s%d PASSA%s / %s%d FALHA%s  (total: %d criterios)\n' \
-  "${VERDE}" "${APROVADOS}" "${FIM}" "${VERMELHO}" "${REPROVADOS}" "${FIM}" "${TOTAL}"
+  "${GREEN}" "${PASSED}" "${RESET}" "${RED}" "${FAILED}" "${RESET}" "${TOTAL}"
 
-if [[ "${REPROVADOS}" -eq 0 ]]; then
-  printf '%sTodos os criterios foram atendidos.%s\n' "${VERDE}" "${FIM}"
+if [[ "${FAILED}" -eq 0 ]]; then
+  printf '%sTodos os criterios foram atendidos.%s\n' "${GREEN}" "${RESET}"
   exit 0
 fi
 
-printf '%s%d criterio(s) nao atendido(s).%s\n' "${VERMELHO}" "${REPROVADOS}" "${FIM}"
+printf '%s%d criterio(s) nao atendido(s).%s\n' "${RED}" "${FAILED}" "${RESET}"
 exit 1

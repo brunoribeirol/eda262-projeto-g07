@@ -5,11 +5,11 @@
 <title>EDA262 Parte 1 — g07</title>
 <style>
 /* ---------------------------------------------------------------------------
-   Slides EDA262 Parte 1 - grupo g07.
-   Regras de design exigidas pelo guia: Arial, um titulo por slide, ate ~5
-   bullets, laranja apenas como acento, bullets quadrados, sem 3D/sombras/
-   imagens genericas, graficos monocromaticos com a serie principal em laranja.
-   Formato 16:9 (13.333in x 7.5in) - imprime 1 slide por pagina no PDF.
+   Slides EDA262 Part 1 - group g07.
+   Design rules required by the course guide: Arial, one title per slide, up to
+   ~5 bullets, orange as accent only, square bullets, no 3D/shadows/generic stock
+   imagery, monochrome charts with the lead series in orange.
+   16:9 page box (13.333in x 7.5in) - renders one slide per PDF page.
 --------------------------------------------------------------------------- */
 
 :root {
@@ -42,7 +42,7 @@ body {
   flex-direction: column;
 }
 
-/* --- tipografia ---------------------------------------------------------- */
+/* --- typography ---------------------------------------------------------- */
 
 h1 {
   font-size: 40pt;
@@ -84,7 +84,7 @@ b, strong { font-weight: bold; }
 .num { color: var(--accent); font-weight: bold; }
 .soft { color: var(--ink-soft); }
 
-/* --- rodape -------------------------------------------------------------- */
+/* --- footer -------------------------------------------------------------- */
 
 .foot {
   position: absolute;
@@ -99,7 +99,7 @@ b, strong { font-weight: bold; }
   padding-top: 0.09in;
 }
 
-/* --- capa ---------------------------------------------------------------- */
+/* --- cover ---------------------------------------------------------------- */
 
 .cover { justify-content: center; }
 .cover h1 { font-size: 50pt; max-width: 10in; }
@@ -108,13 +108,13 @@ b, strong { font-weight: bold; }
 .cover .meta { font-size: 12pt; color: var(--ink-soft); line-height: 1.75; }
 .cover .meta b { color: var(--ink); }
 
-/* --- grid de conteudo ---------------------------------------------------- */
+/* --- content grid ---------------------------------------------------- */
 
 .body { flex: 1; display: flex; gap: 0.55in; min-height: 0; }
 .col  { flex: 1; min-width: 0; }
 .col-narrow { width: 4.15in; flex: none; }
 
-/* --- destaque numerico --------------------------------------------------- */
+/* --- numeric highlight --------------------------------------------------- */
 
 .stat-row { display: flex; gap: 0.3in; margin-top: 0.1in; }
 
@@ -135,7 +135,7 @@ b, strong { font-weight: bold; }
 .hero .v { font-size: 43pt; font-weight: bold; line-height: 1; }
 .hero .l { font-size: 12pt; color: var(--ink-soft); margin-top: 0.1in; line-height: 1.4; }
 
-/* --- grafico de barras (monocromatico, serie principal em laranja) ------- */
+/* --- bar chart (monochrome, lead series in orange) ------- */
 
 .chart { width: 100%; }
 
@@ -155,7 +155,7 @@ b, strong { font-weight: bold; }
 
 .chart-note { font-size: 10pt; color: var(--ink-soft); margin-top: 0.16in; line-height: 1.45; }
 
-/* --- diagrama de arquitetura -------------------------------------------- */
+/* --- architecture diagram -------------------------------------------- */
 
 .arch { display: flex; flex-direction: column; gap: 0.1in; }
 
@@ -171,7 +171,7 @@ b, strong { font-weight: bold; }
 .arrow { font-size: 12pt; color: var(--accent); padding-left: 0.3in; line-height: 1; }
 .arrow span { font-size: 9.5pt; color: var(--ink-soft); padding-left: 0.14in; }
 
-/* --- tabela -------------------------------------------------------------- */
+/* --- table -------------------------------------------------------------- */
 
 table { width: 100%; border-collapse: collapse; font-size: 11.5pt; }
 th {
@@ -187,7 +187,7 @@ td { padding: 0.105in 0.1in 0.105in 0; border-bottom: 1px solid var(--rule); }
 td.n { font-weight: bold; text-align: right; white-space: nowrap; }
 tr.lead td { color: var(--accent); }
 
-/* --- codigo -------------------------------------------------------------- */
+/* --- code -------------------------------------------------------------- */
 
 .code {
   font-family: "Courier New", Courier, monospace;
@@ -200,7 +200,7 @@ tr.lead td { color: var(--accent); }
   overflow: hidden;
 }
 
-/* --- impressao ----------------------------------------------------------- */
+/* --- print ----------------------------------------------------------- */
 
 @page { size: 13.333in 7.5in; margin: 0; }
 
@@ -513,7 +513,7 @@ tr.lead td { color: var(--accent); }
           <div class="l">limite por consulta, imposto no WorkGroup — ≈70× o dataset atual</div>
         </div>
         <div class="stat">
-          <div class="v">24</div>
+          <div class="v">25</div>
           <div class="l">critérios em verifica.sh, com PASSA / FALHA por item</div>
         </div>
         <div class="stat">

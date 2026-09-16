@@ -1,5 +1,8 @@
 # Decisões de engenharia — EDA262 Parte 1 (AV1), grupo g07
 
+*English: [DECISIONS.md](DECISIONS.md). Este arquivo em português é a cópia avaliada —
+o nome `DECISOES.md` é exigido pelo guia da disciplina.*
+
 Cada decisão abaixo é justificada por um número medido, não por prosa. A coluna *como medir*
 indica o comando que reproduz o número em qualquer máquina.
 

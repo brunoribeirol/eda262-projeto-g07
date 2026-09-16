@@ -252,6 +252,6 @@ desse piso para que particionamento tenha economia mensurável.
       `cost_usd = 0.00004768`. **Se o número real divergir, atualizar o slide 8 e o DECISOES.md.**
 - [ ] Conferir os números do slide 7 contra `docs/evidence/business-question-result.csv`
       (a janela de 12 meses é relativa a `current_date`, então pode mudar alguns valores).
-- [ ] `verificacao/verifica.sh` com credenciais → 24/24 PASSA, e guardar a saída.
+- [ ] `verificacao/verifica.sh` com credenciais → 25/25 PASSA, e guardar a saída.
 - [ ] Gravar o vídeo do `apply` → `ingest` → `query` → `destroy`, caso a demo ao vivo falhe.
 - [ ] Cronometrar pelo menos um ensaio completo. 5 minutos é corte rígido.

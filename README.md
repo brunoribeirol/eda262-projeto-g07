@@ -1,180 +1,189 @@
-# EDA262 — Projeto da disciplina, grupo g07 (Parte 1 / AV1)
+# EDA262 — Course project, group g07 (Part 1 / AV1)
 
-Data lake mínimo na AWS, provisionado 100% em Terraform, sobre o catálogo público
-**CISA KEV** (*Known Exploited Vulnerabilities*).
+*Português: [README.pt-BR.md](README.pt-BR.md)*
 
-**Pergunta de negócio:** quais fabricantes concentram o maior número de vulnerabilidades
-ativamente exploradas nos últimos 12 meses — e quanto custa essa consulta no Athena?
+Minimal AWS data lake, provisioned 100% in Terraform, over the public **CISA KEV**
+(Known Exploited Vulnerabilities) catalog.
 
-**Resposta e custo medido:** `docs/evidence/` · **Decisões com números:** [`DECISOES.md`](DECISOES.md)
+**Business question:** which vendors concentrate the most actively exploited vulnerabilities
+over the last 12 months — and what does that query cost in Athena?
+
+**Answer and measured cost:** `docs/evidence/` · **Decisions with numbers:**
+[`DECISIONS.md`](DECISIONS.md) (English) / [`DECISOES.md`](DECISOES.md) (Portuguese, the graded copy)
+
+> **A note on language.** Code, identifiers, comments and documentation are in English.
+> Five names stay in Portuguese because the course guide defines them as the evaluator-facing
+> contract, and the grader's own script expects them verbatim: `parte-1/`, `parte-2/`,
+> `verificacao/verifica.sh`, `DECISOES.md`, and the `PASSA`/`FALHA` verdicts.
 
 ---
 
-## Arquitetura
+## Architecture
 
 ```
-  CISA KEV (feed público, sem autenticação)
+  CISA KEV (public feed, no authentication)
         │
         │  scripts/ingest.sh
         ▼
   ┌─────────────────────────┐
-  │  eda262-g07-lake-raw    │   documento original, byte a byte (1.722.859 B)
+  │  eda262-g07-lake-raw    │   source document, byte-for-byte (1,722,859 B)
   └───────────┬─────────────┘
-              │  raw → trusted: NDJSON, limpo e tipado
-              │  5 barreiras de qualidade (a grain é validada antes de publicar)
+              │  raw → trusted: NDJSON, cleaned and typed
+              │  5 data-quality gates (grain is validated before publishing)
               ▼
   ┌─────────────────────────┐
-  │ eda262-g07-lake-trusted │   1.710 linhas, 1 por CVE (1.497.926 B)
+  │ eda262-g07-lake-trusted │   1,710 rows, one per CVE (1,497,926 B)
   └───────────┬─────────────┘
-              │  schema declarado em IaC — sem Glue Crawler
+              │  schema declared in IaC — no Glue Crawler
               ▼
   ┌─────────────────────────┐
-  │   Glue Data Catalog     │   eda262_g07_kev.kev_vulnerabilities (15 colunas)
+  │   Glue Data Catalog     │   eda262_g07_kev.kev_vulnerabilities (15 columns)
   └───────────┬─────────────┘
-              │
               ▼
   ┌─────────────────────────┐
-  │  Athena WorkGroup       │   eda262-g07-wg · limite de 100 MB por consulta
-  │  eda262-g07-wg          │   custo medido: USD 0,00004768 por consulta
-  └───────────┬─────────────┘
+  │  Athena WorkGroup       │   eda262-g07-wg · 100 MB per-query scan cap
+  └───────────┬─────────────┘   measured cost: USD 0.00004768 per query
               ▼
-     eda262-g07-athena-results   resultados expiram em 7 dias
+     eda262-g07-athena-results   results expire after 7 days
 ```
 
-| Componente | Recurso |
+| Component | Resource |
 |---|---|
-| Camada raw | `eda262-g07-lake-raw` |
-| Camada trusted | `eda262-g07-lake-trusted` |
-| Resultados do Athena | `eda262-g07-athena-results` |
-| Catálogo | `eda262_g07_kev` · tabela `kev_vulnerabilities` |
+| Raw layer | `eda262-g07-lake-raw` |
+| Trusted layer | `eda262-g07-lake-trusted` |
+| Athena results | `eda262-g07-athena-results` |
+| Catalog | `eda262_g07_kev` · table `kev_vulnerabilities` |
 | WorkGroup | `eda262-g07-wg` |
-| Estado do Terraform | `eda262-g07-tfstate-<account-id>` + `eda262-g07-tflock` |
+| Terraform state | `eda262-g07-tfstate-<account-id>` + `eda262-g07-tflock` |
 
-Todos os recursos recebem as tags obrigatórias `turma=eda262`, `grupo=g07`,
-`projeto=engenharia-de-dados` via `default_tags` do provider — um recurso novo não tem como
-esquecê-las.
+Every resource carries the mandatory tags `turma=eda262`, `grupo=g07`,
+`projeto=engenharia-de-dados` through the provider's `default_tags` — a new resource cannot
+forget them.
 
 ---
 
-## Pré-requisitos
+## Prerequisites
 
-| Ferramenta | Versão mínima | Para quê |
+| Tool | Minimum | Purpose |
 |---|---|---|
-| Terraform | 1.5 | provisionamento |
-| AWS CLI | 2.x | autenticação e operação |
-| `jq` | 1.6 | transformação raw → trusted |
-| `curl` | qualquer | download do feed |
+| Terraform | 1.5 | provisioning |
+| AWS CLI | 2.x | authentication and operation |
+| `jq` | 1.6 | raw → trusted transformation |
+| `curl` | any | feed download |
 
-Conta AWS com permissão para criar recursos de S3, Glue, Athena e DynamoDB.
-**Região padrão: `us-east-1`** (o preço do Athena em `DECISOES.md` é o dessa região).
+An AWS account allowed to create S3, Glue, Athena and DynamoDB resources.
+**Default region: `us-east-1`** (the Athena price quoted in `DECISIONS.md` is that region's).
 
 ```bash
-aws configure --profile de     # ou use suas credenciais padrão
+aws configure --profile de
 aws sts get-caller-identity --profile de
 ```
 
 ---
 
-## Deploy do zero
+## Deploy from scratch
 
-Quatro comandos, em ordem. Cada um valida o anterior antes de prosseguir.
+Four commands, in order. Each one validates the previous step before proceeding.
 
 ```bash
-# 1. Cria o backend remoto (bucket de estado + tabela de lock) e gera parte-1/backend.hcl.
-#    Roda uma única vez por conta AWS.
+# 1. Create the remote backend (state bucket + lock table) and generate parte-1/backend.hcl.
+#    Run once per AWS account.
 scripts/bootstrap.sh --profile de --region us-east-1
 
-# 2. Provisiona o data lake no workspace de entrega 'av1'.
+# 2. Provision the data lake in the 'av1' delivery workspace.
 scripts/deploy.sh --profile de --region us-east-1
 
-# 3. Ingere o catálogo KEV: raw → trusted, com as barreiras de qualidade.
+# 3. Ingest the KEV catalog: raw → trusted, through the quality gates.
 scripts/ingest.sh --profile de
 
-# 4. Executa a consulta de negócio e mede o custo real no Athena.
+# 4. Run the business question and measure the real cost in Athena.
 scripts/run_query.sh --profile de
 ```
 
-Para revisar antes de aplicar: `scripts/deploy.sh --profile de --plan-only`.
+To review before applying: `scripts/deploy.sh --profile de --plan-only`.
 
-### O que cada passo produz
+### What each step produces
 
-| Passo | Saída |
+| Step | Output |
 |---|---|
-| `bootstrap.sh` | `parte-1/backend.hcl` (não versionado — contém o ID da conta) |
-| `deploy.sh` | buckets, catálogo, tabela e WorkGroup |
+| `bootstrap.sh` | `parte-1/backend.hcl` (gitignored — it embeds the account ID) |
+| `deploy.sh` | buckets, catalog, table and WorkGroup |
 | `ingest.sh` | `docs/evidence/ingest-metrics.json` |
 | `run_query.sh` | `docs/evidence/business-question-result.csv`, `query-cost.json`, `grain-check-result.csv` |
 
 ---
 
-## Verificação
+## Verification
 
 ```bash
-verificacao/verifica.sh --profile de       # repositório + recursos na AWS
-verificacao/verifica.sh --somente-repo     # apenas critérios estáticos, sem AWS
+verificacao/verifica.sh --profile de     # repository + AWS resources
+verificacao/verifica.sh --repo-only      # static criteria only, no AWS
 ```
 
-Imprime `PASSA`/`FALHA` por critério e retorna `0` somente se todos passarem.
+Prints `PASSA`/`FALHA` per criterion and exits `0` only if all of them pass.
 
 ---
 
-## Destruição
+## Teardown
 
 ```bash
-scripts/destroy.sh --profile de                     # remove o data lake
-scripts/destroy.sh --profile de --include-backend   # remove também o backend (irreversível)
+scripts/destroy.sh --profile de                     # remove the data lake
+scripts/destroy.sh --profile de --include-backend   # also remove the backend (irreversible)
 ```
 
-O script não confia no código de saída do Terraform: depois do `destroy` ele consulta a AWS por
-cada um dos 5 recursos e **falha** se qualquer um ainda existir. Um `destroy` que deixa órfãos
-reprova no critério do guia, então ele é verificado e não presumido.
+The script does not trust Terraform's exit code: after `destroy` it queries AWS for each of the
+5 resources and **fails** if any still exists. A teardown that leaves orphans fails the rubric,
+so it is verified rather than assumed.
 
 ---
 
-## Estrutura do repositório
+## Repository layout
 
 ```
-parte-1/
-  bootstrap/            backend remoto (estado local — resolve o ovo e a galinha)
-  modules/data-lake/    o módulo: S3 + Glue + Athena
-    locals.tf           schema da tabela trusted, declarado como dado
-    queries.tf          SQL da pergunta de negócio, versionado em IaC
-  main.tf               chama o módulo; bloqueia o workspace 'default'
+parte-1/                  Part 1 Terraform (name mandated by the course guide)
+  bootstrap/              remote backend (local state — breaks the chicken-and-egg)
+  modules/data-lake/      the module: S3 + Glue + Athena
+    locals.tf             trusted table schema, declared as data
+    queries.tf            business-question SQL, versioned in IaC
+  main.tf                 calls the module; blocks the 'default' workspace
 scripts/
-  kev_to_trusted.jq     transformação raw → trusted (testável isoladamente)
-  bootstrap.sh          cria o backend
-  deploy.sh             provisiona
-  ingest.sh             ingere, com 5 barreiras de qualidade
-  run_query.sh          consulta e mede o custo
-  destroy.sh            destrói e confere que não sobrou nada
-verificacao/verifica.sh script de aceitação (PASSA/FALHA)
-DECISOES.md             decisões com números medidos
-docs/evidence/          evidências geradas pela execução
+  kev_to_trusted.jq       raw → trusted transformation (testable standalone)
+  bootstrap.sh            creates the backend
+  deploy.sh               provisions
+  ingest.sh               ingests, behind 5 quality gates
+  run_query.sh            queries and measures cost
+  destroy.sh              destroys and verifies nothing was orphaned
+verificacao/verifica.sh   acceptance script (PASSA/FALHA — name mandated)
+DECISIONS.md              engineering decisions, measured (English)
+DECISOES.md               same decisions in Portuguese — the graded copy
+docs/
+  presentation/           slide deck (EN + PT) and speaker notes
+  evidence/               output produced by a real run
 ```
 
 ---
 
-## Decisões de projeto em uma linha
+## Design decisions in one line each
 
-O detalhamento com números está em [`DECISOES.md`](DECISOES.md).
+Full detail with numbers in [`DECISIONS.md`](DECISIONS.md).
 
-- **Granularidade:** uma linha por CVE — 1.710 linhas, 1.710 `cve_id` distintos, **0** duplicatas.
-- **Sem Glue Crawler:** schema de 15 colunas declarado em IaC; evita ~USD 0,073 por execução e
-  variação de tipo entre *crawls*.
-- **Custo por consulta:** **USD 0,00004768** — o dataset (1,43 MB) cabe 7× dentro do mínimo
-  cobrável de 10 MB do Athena.
-- **Sem Parquet nesta fase:** a cobrança já está no piso; converter economizaria **USD 0,00**.
-  Entra na Parte 2, quando o volume passar do mínimo.
-- **Workspace `av1`:** produz os nomes exigidos pelo guia; outros workspaces recebem sufixo, para
-  que nomes de bucket (globais) nunca colidam.
+- **Grain:** one row per CVE — 1,710 rows, 1,710 distinct `cve_id`, **0** duplicates.
+- **No Glue Crawler:** 15 columns declared in IaC; avoids ~USD 0.073 per crawl and type drift
+  between runs.
+- **Cost per query:** **USD 0.00004768** — the dataset (1.43 MB) fits 7× inside Athena's 10 MB
+  minimum billing unit.
+- **No Parquet in this phase:** billing is already at the floor, so converting would save
+  **USD 0.00**. It belongs to Part 2, once volume clears the minimum.
+- **Workspace `av1`:** produces the mandated names; other workspaces get a suffix, so globally
+  unique bucket names never collide.
 
 ---
 
-## Limitações conhecidas (escopo da Parte 1)
+## Known limitations (Part 1 scope)
 
-Fora de escopo por decisão, não por esquecimento — entram na Parte 2:
+Out of scope by decision, not by omission — these arrive in Part 2:
 
-- Sem Parquet, sem particionamento, sem camada refined.
-- Ingestão **não idempotente**: re-executar `ingest.sh` sobrescreve o objeto da camada trusted.
-- Sem Lake Formation: o controle de acesso é o do S3/IAM.
-- `date_added` e `due_date` são `string` em ISO-8601, não `date` — ver `DECISOES.md` §5.
+- No Parquet, no partitioning, no refined layer.
+- Ingestion is **not idempotent**: re-running `ingest.sh` overwrites the trusted object.
+- No Lake Formation: access control is plain S3/IAM.
+- `date_added` and `due_date` are ISO-8601 `string`, not `date` — see `DECISIONS.md` §5.
