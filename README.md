@@ -83,6 +83,18 @@ aws sts get-caller-identity --profile de
 
 ## Deploy from scratch
 
+### One command
+
+```bash
+scripts/run_all.sh --profile de
+```
+
+Provisions, ingests, measures the cost, renders the decks and runs the verification — producing
+every piece of evidence the rubric asks for. It confirms before creating any AWS resource.
+Add `--destroy-after` to tear everything down at the end.
+
+### Or step by step
+
 Four commands, in order. Each one validates the previous step before proceeding.
 
 ```bash
@@ -153,11 +165,13 @@ scripts/
   ingest.sh               ingests, behind 5 quality gates
   run_query.sh            queries and measures cost
   destroy.sh              destroys and verifies nothing was orphaned
+  build_pdf.sh            renders the slide decks to PDF
+  run_all.sh              runs the whole pipeline end to end
 verificacao/verifica.sh   acceptance script (PASSA/FALHA — name mandated)
 DECISIONS.md              engineering decisions, measured (English)
 DECISOES.md               same decisions in Portuguese — the graded copy
 docs/
-  presentation/           slide deck (EN + PT) and speaker notes
+  presentation/           slide deck (EN + PT)
   evidence/               output produced by a real run
 ```
 

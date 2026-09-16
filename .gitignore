@@ -56,3 +56,10 @@ parte-1/backend.hcl
 
 # NOTE: .terraform.lock.hcl is intentionally NOT ignored. It pins provider
 # versions and hashes, so the evaluator resolves the same providers we did.
+
+# --- Local-only working material (never committed) ---------------------------
+# Talk track for the presentation and the walkthrough docs: personal working
+# material, not part of the graded deliverable.
+docs/presentation/speaker-notes.pt-BR.md
+docs/work/project-explained.md
+docs/work/project-explained.pt-BR.md

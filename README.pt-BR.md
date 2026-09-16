@@ -84,6 +84,18 @@ aws sts get-caller-identity --profile de
 
 ## Deploy do zero
 
+### Um comando
+
+```bash
+scripts/run_all.sh --profile de
+```
+
+Provisiona, ingere, mede o custo, gera os PDFs e roda a verificação — produzindo todas as
+evidências que o guia exige. Pede confirmação antes de criar qualquer recurso na AWS.
+Use `--destroy-after` para destruir tudo ao final.
+
+### Ou passo a passo
+
 Quatro comandos, em ordem. Cada um valida o anterior antes de prosseguir.
 
 ```bash
@@ -154,11 +166,13 @@ scripts/
   ingest.sh             ingere, com 5 barreiras de qualidade
   run_query.sh          consulta e mede o custo
   destroy.sh            destrói e confere que não sobrou nada
+  build_pdf.sh          gera os PDFs dos slides
+  run_all.sh            roda o pipeline inteiro de ponta a ponta
 verificacao/verifica.sh script de aceitação (PASSA/FALHA — nome obrigatório)
 DECISOES.md             decisões com números medidos (cópia avaliada)
 DECISIONS.md            as mesmas decisões em inglês
 docs/
-  presentation/         slides (EN + PT) e guia de falas
+  presentation/         slides (EN + PT)
   evidence/             evidências geradas pela execução
 ```
 

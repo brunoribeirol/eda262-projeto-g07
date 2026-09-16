@@ -4,14 +4,9 @@
 |---|---|---|
 | `apresentacao-parte-1-g07.html` | Portuguese | Source for the **delivered PDF**. The filename is mandated by the course guide. |
 | `presentation-part-1-g07.html` | English | Portfolio version. Identical design and numbers. |
-| `speaker-notes.pt-BR.md` | Portuguese | Talk track, timing budget and Q&A bank. |
 
-**Why the speaker notes exist only in Portuguese:** they are a working tool for a talk delivered in
-Portuguese — sentences written to be spoken aloud, with the anchor phrase per slide. An English
-translation would be a document nobody uses. The slides themselves exist in both languages because
-those are the artifact people look at.
-
-Both decks share a byte-identical stylesheet, so a change to one must be mirrored in the other.
+The Portuguese deck is the one that becomes the delivered PDF; the English deck exists for
+portfolio use. Both decks share a byte-identical stylesheet, so a change to one must be mirrored in the other.
 
 ---
 
@@ -30,6 +25,13 @@ Non-negotiable, and already applied:
 ## Generating the PDF
 
 The delivered file must be named `apresentacao-parte-1-g07.pdf`.
+
+```bash
+scripts/build_pdf.sh          # renders both decks
+```
+
+It picks up Chrome, Chromium or Edge automatically and checks that the output has 10 pages.
+Doing it by hand instead:
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
