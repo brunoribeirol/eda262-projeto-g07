@@ -1,0 +1,15 @@
+# Copy to terraform.tfvars and adjust. All values below are the defaults.
+
+aws_region  = "us-east-1"
+aws_profile = "" # e.g. "de" -- empty uses the default AWS credential chain
+
+# The course guide fixes these; change only if the group number changes.
+name_prefix        = "eda262-g07"
+glue_database_name = "eda262_g07_kev"
+trusted_table_name = "kev_vulnerabilities"
+
+# Workspace whose resource names match the guide verbatim.
+delivery_workspace = "av1"
+
+# Athena cost guardrail: cancel any query scanning more than 100 MB.
+bytes_scanned_cutoff_per_query = 104857600
