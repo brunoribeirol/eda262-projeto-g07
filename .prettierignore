@@ -1,0 +1,4 @@
+# The slide decks rely on `white-space: pre` blocks where every line break and
+# space is significant. Reformatting them silently rewraps that content and
+# breaks the rendered slides, so they are excluded from any formatter.
+docs/presentation/*.html
