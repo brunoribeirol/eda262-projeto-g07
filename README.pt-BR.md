@@ -185,7 +185,7 @@ O detalhamento com números está em [`DECISOES.md`](DECISOES.md).
 - **Granularidade:** uma linha por CVE — 1.710 linhas, 1.710 `cve_id` distintos, **0** duplicatas.
 - **Sem Glue Crawler:** schema de 15 colunas declarado em IaC; evita ~USD 0,073 por execução e
   variação de tipo entre *crawls*.
-- **Custo por consulta:** **USD 0,00004768** — o dataset (1,43 MB) cabe 7× dentro do mínimo
+- **Custo por consulta:** **USD 0,00004768** — a consulta varre 3,0 MB e cabe 3,5× dentro do mínimo
   cobrável de 10 MB do Athena.
 - **Sem Parquet nesta fase:** a cobrança já está no piso; converter economizaria **USD 0,00**.
   Entra na Parte 2, quando o volume passar do mínimo.

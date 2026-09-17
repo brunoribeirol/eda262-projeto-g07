@@ -1,0 +1,20 @@
+{
+  "query": "top vendors by KEV count, last 12 months",
+  "execution_id": "03e82f7a-6abf-4205-92a4-0cddb5874d46",
+  "workgroup": "eda262-g07-wg",
+  "region": "us-east-1",
+  "measured_at": "2026-09-17T11:31:07Z",
+  "data_scanned_bytes": 3005144,
+  "billed_bytes": 10485760,
+  "athena_min_billed_bytes": 10485760,
+  "engine_execution_ms": 555,
+  "total_execution_ms": 753,
+  "price_per_tb_usd": "5.00",
+  "cost_usd": "0.00004768",
+  "queries_per_usd": 20973,
+  "grain_check": {
+    "total_rows": 1713,
+    "distinct_cve_id": 1713,
+    "duplicate_rows": 0
+  }
+}

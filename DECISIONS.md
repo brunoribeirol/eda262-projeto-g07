@@ -6,7 +6,7 @@ Every decision below is justified by a measured number, not by prose. The *how t
 snippets reproduce each number on any machine.
 
 **Source:** public CISA KEV (Known Exploited Vulnerabilities) catalog.
-**Reference snapshot:** `catalogVersion` **2026.09.14**, holding **1,710** records.
+**Reference snapshot:** `catalogVersion` **2026.09.16**, holding **1,713** records.
 **Business question:** which vendors concentrate the most actively exploited vulnerabilities
 over the last 12 months, and what does that query cost in Athena?
 
@@ -23,8 +23,8 @@ itself, as the table parameter `grain = "one row per cve_id"`.
 
 | Evidence | Value |
 |---|---|
-| Records in the feed | **1,710** |
-| Distinct `cveID` | **1,710** |
+| Records in the feed | **1,713** |
+| Distinct `cveID` | **1,713** |
 | Duplicate rows | **0** |
 
 How to measure (source):
@@ -39,7 +39,7 @@ How to measure (AWS): the `eda262-g07-grain-check` named query, provisioned by T
 `docs/evidence/grain-check-result.csv`.
 
 **Why this grain and not another:** the alternative was *one row per (CVE, product)* pair. It was
-rejected with a number: the feed ships `product` as free text, and **214 of 1,710 records (12.5%)**
+rejected with a number: the feed ships `product` as free text, and **214 of 1,713 records (12.5%)**
 contain separators that may indicate multiple products — **193** with `" and "` and **49** with a
 comma.
 
@@ -70,12 +70,12 @@ jq -r '[.vulnerabilities[]|select(.product|test(" and |,|/"))]|length' \
 
 | Evidence | Value |
 |---|---|
-| `cve_id` uniqueness | **100%** (1,710/1,710) |
+| `cve_id` uniqueness | **100%** (1,713/1,713) |
 | Empty or null `cve_id` | **0** |
 | Format | `CVE-YYYY-NNNNN`, MITRE standard |
 
 **Why no surrogate key:** the natural key is already stable, global, unique and human-readable.
-A surrogate would add 1,710 values while removing no ambiguity — cost without measurable return.
+A surrogate would add 1,713 values while removing no ambiguity — cost without measurable return.
 The pipeline validates uniqueness at two independent barriers: in `ingest.sh` before publishing,
 and via the grain named query after publishing.
 
@@ -88,14 +88,14 @@ line-delimited JSON (NDJSON), cleaned and typed.
 
 | Evidence | Value |
 |---|---|
-| Raw | **1,722,859 bytes** (1 JSON object, nested array) |
-| Trusted | **1,497,926 bytes** (1,710 lines) |
-| Size delta | **−13.1%** |
-| Average bytes per row | **875** |
+| Raw | **1,727,984 bytes** (1 JSON object, nested array) |
+| Trusted | **1,502,572 bytes** (1,713 lines) |
+| Size delta | **−13.0%** |
+| Average bytes per row | **877** |
 
 **Why NDJSON rather than the original JSON:** Athena's `JsonSerDe` reads **one object per line**.
-The CISA document is a single object containing an array of 1,710 items — pointing the table at it
-would return **1 row**, not 1,710. The conversion is required for the table to be queryable at all;
+The CISA document is a single object containing an array of 1,713 items — pointing the table at it
+would return **1 row**, not 1,713. The conversion is required for the table to be queryable at all;
 it is not a stylistic preference.
 
 **Why raw and trusted are separate:** the raw layer preserves proof of origin. Any result can be
@@ -111,8 +111,8 @@ the only stored copy.
 | Problem measured at source | Before | After |
 |---|---|---|
 | Stray whitespace in `vendorProject` / `product` | **18 rows (1.05%)** | **0** |
-| `knownRansomwareCampaignUse` as text | `Known` 360 / `Unknown` 1,350 | boolean |
-| `forensicTriage` as text | `Yes` 52 / `No` 1,658 | boolean |
+| `knownRansomwareCampaignUse` as text | `Known` 360 / `Unknown` 1,353 | boolean |
+| `forensicTriage` as text | `Yes` 55 / `No` 1,658 | boolean |
 | `cwes` without a precomputed count | array (0–4 items; **175** empty) | `cwe_count` int |
 
 **Direct impact on the business question:** the value `"SimpleHelp "` (trailing space) appears in
@@ -140,7 +140,7 @@ as ISO-8601 `string`.
 | Evidence | Value |
 |---|---|
 | Explicitly declared columns | **15** |
-| `date_added` outside ISO-8601 | **0 of 1,710** |
+| `date_added` outside ISO-8601 | **0 of 1,713** |
 | Glue Crawlers used | **0** |
 
 **Why dates stay `string`:** the backing file is text — in NDJSON every value is text. Forcing
@@ -164,17 +164,32 @@ because the volume makes the optimization irrelevant at this stage.
 
 | Evidence | Value |
 |---|---|
-| Volume scanned by the query | **1,497,926 bytes** (~1.43 MB) |
+| Trusted table size | **1,502,572 bytes** (~1.43 MB) |
+| **Volume scanned by the query** (measured on AWS) | **3,005,144 bytes** |
 | Athena minimum billed | **10,485,760 bytes** (10 MB) |
 | Volume actually billed | **10,485,760 bytes** |
+| Engine execution time | **555 ms** (753 ms total) |
 | Price (us-east-1) | **USD 5.00 per TB** |
 | **Cost per query** | **USD 0.00004768** |
-| Queries per USD 1.00 | **≈ 20,971** |
+| Queries per USD 1.00 | **≈ 20,973** |
+
+**A finding from measuring:** the scanned volume is **exactly 2.00× the table size**
+(3,005,144 = 2 × 1,502,572). The cause is the scalar subquery
+`(SELECT count(*) FROM window_kev)` used to compute the concentration percentage: Athena does not
+materialize the CTE, so it **reads the data twice** — once for the per-vendor aggregation, once for
+the total.
+
+This is exactly the kind of thing only measurement reveals. A projection from the file size would
+have understated the scan by half. We did not rewrite the query, because the cost does not change
+(still under the floor), but the behaviour is on record: at Part 2 volumes that double read starts
+carrying a price and the query will need restructuring.
+
+Reference execution: `03e82f7a-6abf-4205-92a4-0cddb5874d46` (`docs/evidence/query-cost.json`).
 
 Formula: `cost = max(scanned_bytes, 10,485,760) ÷ 1,099,511,627,776 × 5.00`
 
-**The decisive number:** the entire dataset (1.43 MB) fits **7 times** inside the 10 MB minimum
-billing unit. Any scan optimization — Parquet, partitioning, compression — would cut bytes read but
+**The decisive number:** even scanning twice the file, the query reads 3,005,144 bytes and fits
+**3.5 times** inside the 10 MB minimum billing unit. Any scan optimization — Parquet, partitioning, compression — would cut bytes read but
 **would not cut a single cent**, because billing is already at the floor. Converting to Parquet at
 this stage would cost engineering effort for a measured saving of **USD 0.00**. That is why Parquet
 and partitioning belong to Part 2, once volume clears the billing minimum — not because they are
@@ -271,9 +286,9 @@ environment with non-reproducible data, this decision would be the opposite of c
 
 | # | Decision | Decisive number |
 |---|---|---|
-| 1 | Grain: one row per CVE | 1,710 rows / 1,710 `cve_id` / **0** duplicates |
+| 1 | Grain: one row per CVE | 1,713 rows / 1,713 `cve_id` / **0** duplicates |
 | 2 | Natural key `cve_id` | **100%** unique, **0** empty |
-| 3 | Trusted as NDJSON | 1 object → **1,710** queryable rows |
+| 3 | Trusted as NDJSON | 1 object → **1,713** queryable rows |
 | 4 | Whitespace cleaning | **18 → 0** dirty rows (1.05%) |
 | 5 | Schema in IaC, no Crawler | **15** columns, **0** Crawlers, **USD 0.073** avoided per crawl |
 | 6 | Cost per query | **USD 0.00004768** (10 MB floor) |

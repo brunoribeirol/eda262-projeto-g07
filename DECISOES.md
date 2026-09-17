@@ -7,7 +7,7 @@ Cada decisão abaixo é justificada por um número medido, não por prosa. A col
 indica o comando que reproduz o número em qualquer máquina.
 
 **Fonte:** catálogo público CISA KEV (Known Exploited Vulnerabilities).
-**Snapshot de referência:** `catalogVersion` **2026.09.14**, com **1.710** registros.
+**Snapshot de referência:** `catalogVersion` **2026.09.16**, com **1.713** registros.
 **Pergunta de negócio:** quais fabricantes concentram o maior número de vulnerabilidades
 ativamente exploradas (KEV) nos últimos 12 meses, e qual o custo dessa consulta no Athena?
 
@@ -25,8 +25,8 @@ Glue Data Catalog, no parâmetro `grain = "one row per cve_id"` da tabela.
 
 | Evidência | Valor |
 |---|---|
-| Registros no feed | **1.710** |
-| `cveID` distintos | **1.710** |
+| Registros no feed | **1.713** |
+| `cveID` distintos | **1.713** |
 | Linhas duplicadas | **0** |
 
 Como medir (fonte):
@@ -41,7 +41,7 @@ Como medir (AWS): a named query `eda262-g07-grain-check`, provisionada pelo Terr
 `docs/evidence/grain-check-result.csv`.
 
 **Por que essa e não outra:** a granularidade alternativa seria *uma linha por par (CVE, produto)*.
-Ela foi descartada com número: o feed entrega `product` como texto livre, e **214 dos 1.710
+Ela foi descartada com número: o feed entrega `product` como texto livre, e **214 dos 1.713
 registros (12,5%)** contêm separadores que podem indicar múltiplos produtos — **193** com `" and "`
 e **49** com vírgula.
 
@@ -72,12 +72,12 @@ jq -r '[.vulnerabilities[]|select(.product|test(" and |,|/"))]|length' \
 
 | Evidência | Valor |
 |---|---|
-| Unicidade de `cve_id` | **100%** (1.710/1.710) |
+| Unicidade de `cve_id` | **100%** (1.713/1.713) |
 | `cve_id` vazios ou nulos | **0** |
 | Formato | `CVE-AAAA-NNNNN`, padrão MITRE |
 
 **Por que sem surrogate key:** a chave natural já é estável, global, única e legível por humanos.
-Uma surrogate key acrescentaria 1.710 valores sem remover nenhuma ambiguidade — custo sem retorno
+Uma surrogate key acrescentaria 1.713 valores sem remover nenhuma ambiguidade — custo sem retorno
 mensurável. O pipeline valida a unicidade em duas barreiras independentes: no `ingest.sh`, antes de
 publicar, e na named query de granularidade, depois de publicado.
 
@@ -90,14 +90,14 @@ por linha (NDJSON), limpo e tipado.
 
 | Evidência | Valor |
 |---|---|
-| Raw | **1.722.859 bytes** (1 objeto JSON, array aninhado) |
-| Trusted | **1.497.926 bytes** (1.710 linhas) |
-| Variação de tamanho | **−13,1%** |
-| Bytes médios por linha | **875** |
+| Raw | **1.727.984 bytes** (1 objeto JSON, array aninhado) |
+| Trusted | **1.502.572 bytes** (1.713 linhas) |
+| Variação de tamanho | **−13,0%** |
+| Bytes médios por linha | **877** |
 
 **Por que NDJSON e não o JSON original:** o `JsonSerDe` do Athena lê **um objeto por linha**. O
-documento da CISA é um único objeto contendo um array de 1.710 itens — apontar a tabela para ele
-retornaria **1 linha**, não 1.710. A conversão é obrigatória para a tabela ser consultável, não é
+documento da CISA é um único objeto contendo um array de 1.713 itens — apontar a tabela para ele
+retornaria **1 linha**, não 1.713. A conversão é obrigatória para a tabela ser consultável, não é
 preferência estética.
 
 **Por que raw e trusted separados:** a camada raw preserva a prova de origem. Qualquer resultado pode
@@ -113,8 +113,8 @@ fosse aplicada de forma destrutiva no único arquivo armazenado.
 | Problema medido na fonte | Antes | Depois |
 |---|---|---|
 | Espaço espúrio em `vendorProject` / `product` | **18 linhas (1,05%)** | **0** |
-| `knownRansomwareCampaignUse` como texto | `Known` 360 / `Unknown` 1.350 | booleano |
-| `forensicTriage` como texto | `Yes` 52 / `No` 1.658 | booleano |
+| `knownRansomwareCampaignUse` como texto | `Known` 360 / `Unknown` 1.353 | booleano |
+| `forensicTriage` como texto | `Yes` 55 / `No` 1.658 | booleano |
 | `cwes` sem contagem pré-calculada | array (0 a 4 itens; **175** vazios) | `cwe_count` int |
 
 **Impacto direto na pergunta de negócio:** o valor `"SimpleHelp "` (com espaço ao final) aparece em
@@ -142,7 +142,7 @@ scripts/ingest.sh --keep-local   # as 5 barreiras de qualidade imprimem cada nú
 | Evidência | Valor |
 |---|---|
 | Colunas declaradas explicitamente | **15** |
-| `date_added` fora do padrão ISO-8601 | **0 de 1.710** |
+| `date_added` fora do padrão ISO-8601 | **0 de 1.713** |
 | Glue Crawlers usados | **0** |
 
 **Por que data como `string`:** o arquivo de apoio é texto — em NDJSON todo valor é texto. Forçar
@@ -166,17 +166,32 @@ integral — porque o volume torna a otimização irrelevante nesta fase.
 
 | Evidência | Valor |
 |---|---|
-| Volume varrido pela consulta | **1.497.926 bytes** (~1,43 MB) |
+| Tamanho da tabela trusted | **1.502.572 bytes** (~1,43 MB) |
+| **Volume varrido pela consulta** (medido na AWS) | **3.005.144 bytes** |
 | Mínimo cobrado pelo Athena | **10.485.760 bytes** (10 MB) |
 | Volume efetivamente cobrado | **10.485.760 bytes** |
+| Tempo de execução do motor | **555 ms** (total 753 ms) |
 | Preço (us-east-1) | **USD 5,00 por TB** |
 | **Custo por consulta** | **USD 0,00004768** |
-| Consultas por USD 1,00 | **≈ 20.971** |
+| Consultas por USD 1,00 | **≈ 20.973** |
+
+**Um achado da medição:** o volume varrido é **exatamente 2,00× o tamanho da tabela**
+(3.005.144 = 2 × 1.502.572). A causa é a subconsulta escalar
+`(SELECT count(*) FROM window_kev)`, usada para calcular o percentual de concentração: o Athena
+não materializa a CTE, então ele **lê os dados duas vezes** — uma para a agregação por fabricante,
+outra para o total.
+
+Isso é exatamente o tipo de coisa que só aparece medindo. A projeção feita sobre o tamanho do
+arquivo teria subestimado a varredura pela metade. Não alteramos a consulta porque o custo não muda
+(continuamos abaixo do piso), mas o comportamento está registrado: com volume maior, na Parte 2,
+essa dupla leitura passa a ter preço e a consulta precisará ser reescrita.
+
+Execução de referência: `03e82f7a-6abf-4205-92a4-0cddb5874d46` (`docs/evidence/query-cost.json`).
 
 Fórmula: `custo = max(bytes_varridos, 10.485.760) ÷ 1.099.511.627.776 × 5,00`
 
-**O número decisivo:** o dataset inteiro (1,43 MB) cabe **7 vezes** dentro do mínimo cobrável de
-10 MB. Qualquer otimização de varredura — Parquet, particionamento, compressão — reduziria os bytes
+**O número decisivo:** mesmo varrendo o dobro do arquivo, a consulta lê 3.005.144 bytes e cabe
+**3,5 vezes** dentro do mínimo cobrável de 10 MB. Qualquer otimização de varredura — Parquet, particionamento, compressão — reduziria os bytes
 lidos, mas **não reduziria um centavo da fatura**, porque a cobrança já está no piso. Converter para
 Parquet nesta fase custaria esforço de engenharia com economia medida de **USD 0,00**. É por isso que
 Parquet e particionamento pertencem à Parte 2, quando o volume passar do piso de cobrança — e não por
@@ -272,9 +287,9 @@ dado não reproduzível, esta decisão seria o oposto da correta.
 
 | # | Decisão | Número decisivo |
 |---|---|---|
-| 1 | Granularidade: 1 linha por CVE | 1.710 linhas / 1.710 `cve_id` / **0** duplicatas |
+| 1 | Granularidade: 1 linha por CVE | 1.713 linhas / 1.713 `cve_id` / **0** duplicatas |
 | 2 | Chave natural `cve_id` | **100%** única, **0** vazias |
-| 3 | Trusted em NDJSON | 1 objeto → **1.710** linhas consultáveis |
+| 3 | Trusted em NDJSON | 1 objeto → **1.713** linhas consultáveis |
 | 4 | Limpeza de espaços | **18 → 0** linhas sujas (1,05%) |
 | 5 | Schema declarado, sem Crawler | **15** colunas, **0** Crawlers, **USD 0,073** evitados por crawl |
 | 6 | Custo por consulta | **USD 0,00004768** (piso de 10 MB) |

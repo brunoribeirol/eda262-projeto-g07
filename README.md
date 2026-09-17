@@ -184,8 +184,8 @@ Full detail with numbers in [`DECISIONS.md`](DECISIONS.md).
 - **Grain:** one row per CVE — 1,710 rows, 1,710 distinct `cve_id`, **0** duplicates.
 - **No Glue Crawler:** 15 columns declared in IaC; avoids ~USD 0.073 per crawl and type drift
   between runs.
-- **Cost per query:** **USD 0.00004768** — the dataset (1.43 MB) fits 7× inside Athena's 10 MB
-  minimum billing unit.
+- **Cost per query:** **USD 0.00004768** — the query scans 3.0 MB and fits 3.5x inside
+  Athena's 10 MB minimum billing unit.
 - **No Parquet in this phase:** billing is already at the floor, so converting would save
   **USD 0.00**. It belongs to Part 2, once volume clears the minimum.
 - **Workspace `av1`:** produces the mandated names; other workspaces get a suffix, so globally

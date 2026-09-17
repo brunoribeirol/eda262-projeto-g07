@@ -252,8 +252,8 @@ tr.lead td { color: var(--accent); }
     <div class="col col-narrow">
       <div class="stat-row" style="flex-direction:column;gap:0.26in">
         <div class="stat">
-          <div class="v">1.710</div>
-          <div class="l">CVEs no catálogo<br>(catalogVersion 2026.09.14)</div>
+          <div class="v">1.713</div>
+          <div class="l">CVEs no catálogo<br>(catalogVersion 2026.09.16)</div>
         </div>
         <div class="stat">
           <div class="v">296</div>
@@ -277,7 +277,7 @@ tr.lead td { color: var(--accent); }
       <div class="arch">
         <div class="node">
           <div class="t">CISA KEV — feed público</div>
-          <div class="d">JSON, sem autenticação, 1.722.859 bytes</div>
+          <div class="d">JSON, sem autenticação, 1.727.984 bytes</div>
         </div>
         <div class="arrow">▼ <span>ingest.sh — 5 barreiras de qualidade</span></div>
         <div class="node">
@@ -287,7 +287,7 @@ tr.lead td { color: var(--accent); }
         <div class="arrow">▼ <span>limpeza e tipagem → NDJSON</span></div>
         <div class="node">
           <div class="t">S3 · eda262-g07-lake-trusted</div>
-          <div class="d">1.710 linhas · 1.497.926 bytes</div>
+          <div class="d">1.713 linhas · 1.502.572 bytes</div>
         </div>
         <div class="arrow">▼ <span>schema declarado em IaC</span></div>
         <div class="node">
@@ -326,7 +326,7 @@ tr.lead td { color: var(--accent); }
             <span class="num">count(*) − count(DISTINCT cve_id)</span> e precisa retornar 0.</li>
         <li>Alternativa avaliada e <b>descartada com número</b>: um grão por
             (CVE, produto).</li>
-        <li><span class="num">214 de 1.710</span> valores de <b>product</b> (12,5%) trazem
+        <li><span class="num">214 de 1.713</span> valores de <b>product</b> (12,5%) trazem
             separador ambíguo.</li>
       </ul>
       <div class="code" style="margin-top:0.1in">"NetScaler ADC <b style="color:#e8710a">and</b> NetScaler Gateway"   → 2 produtos
@@ -338,8 +338,8 @@ tr.lead td { color: var(--accent); }
     </div>
     <div class="col col-narrow">
       <div class="stat-row" style="flex-direction:column;gap:0.26in">
-        <div class="stat"><div class="v">1.710</div><div class="l">linhas na tabela trusted</div></div>
-        <div class="stat"><div class="v">1.710</div><div class="l">cve_id distintos</div></div>
+        <div class="stat"><div class="v">1.713</div><div class="l">linhas na tabela trusted</div></div>
+        <div class="stat"><div class="v">1.713</div><div class="l">cve_id distintos</div></div>
         <div class="stat"><div class="v">0</div><div class="l">duplicatas — o grão se sustenta</div></div>
       </div>
     </div>
@@ -355,10 +355,10 @@ tr.lead td { color: var(--accent); }
       <table>
         <tr><th>Problema medido na origem</th><th style="text-align:right">Antes</th><th style="text-align:right">Depois</th></tr>
         <tr class="lead"><td>Espaço espúrio em vendor / product</td><td class="n">18</td><td class="n">0</td></tr>
-        <tr><td>"Known" / "Unknown" como texto</td><td class="n">360 / 1.350</td><td class="n">boolean</td></tr>
-        <tr><td>"Yes" / "No" como texto</td><td class="n">52 / 1.658</td><td class="n">boolean</td></tr>
+        <tr><td>"Known" / "Unknown" como texto</td><td class="n">360 / 1.353</td><td class="n">boolean</td></tr>
+        <tr><td>"Yes" / "No" como texto</td><td class="n">55 / 1.658</td><td class="n">boolean</td></tr>
         <tr><td>cwes sem contagem pré-calculada</td><td class="n">array</td><td class="n">int</td></tr>
-        <tr><td>1 objeto JSON com array aninhado</td><td class="n">1 linha</td><td class="n">1.710 linhas</td></tr>
+        <tr><td>1 objeto JSON com array aninhado</td><td class="n">1 linha</td><td class="n">1.713 linhas</td></tr>
       </table>
       <p style="font-size:11pt;color:#5f5f5f;margin-top:0.2in;line-height:1.45">
         A ingestão só publica se as <b>5 barreiras</b> passarem. A barreira de grão bloqueia
@@ -462,11 +462,12 @@ tr.lead td { color: var(--accent); }
     <div class="col">
       <table>
         <tr><th>Medição</th><th style="text-align:right">Valor</th></tr>
-        <tr><td>Volume varrido pela consulta</td><td class="n">1.497.926 B</td></tr>
+        <tr><td>Tamanho da tabela trusted</td><td class="n">1.502.572 B</td></tr>
+        <tr class="lead"><td>Volume varrido (medido)</td><td class="n">3.005.144 B</td></tr>
         <tr><td>Mínimo cobrado pelo Athena</td><td class="n">10.485.760 B</td></tr>
-        <tr class="lead"><td>Volume efetivamente cobrado</td><td class="n">10.485.760 B</td></tr>
+        <tr><td>Volume efetivamente cobrado</td><td class="n">10.485.760 B</td></tr>
         <tr><td>Preço (us-east-1)</td><td class="n">USD 5,00 / TB</td></tr>
-        <tr><td>Consultas por USD 1,00</td><td class="n">≈ 20.971</td></tr>
+        <tr><td>Consultas por USD 1,00</td><td class="n">≈ 20.973</td></tr>
       </table>
       <div class="hero" style="margin-top:0.3in">
         <div class="v">USD 0,00004768</div>
@@ -476,10 +477,12 @@ tr.lead td { color: var(--accent); }
     <div class="col col-narrow">
       <div class="kicker">Por que não usamos Parquet</div>
       <ul style="margin-top:0.1in">
-        <li>O dataset inteiro cabe <span class="num">7 vezes</span> dentro do mínimo
-            cobrável de 10 MB.</li>
-        <li>Parquet, particionamento e compressão reduziriam os <b>bytes lidos</b>...</li>
-        <li>...e <b>nenhum centavo</b> da fatura: a cobrança já está no piso.</li>
+        <li>A consulta varre <span class="num">3,0 MB</span> e cabe <span class="num">3,5×</span>
+            dentro do mínimo cobrável de 10 MB.</li>
+        <li>A varredura é <b>2,00× a tabela</b>: a subconsulta escalar faz o Athena ler os
+            dados duas vezes — só descoberto medindo.</li>
+        <li>Parquet e particionamento reduziriam os <b>bytes lidos</b> — e <b>nenhum centavo</b>
+            da fatura, que já está no piso.</li>
         <li>Economia medida da otimização: <span class="num">USD 0,00</span>.</li>
         <li>Entra na Parte 2, quando o volume passar do piso — decisão por número,
             não por calendário.</li>
@@ -533,7 +536,7 @@ tr.lead td { color: var(--accent); }
     <div class="col">
       <table>
         <tr><th>Decisão</th><th style="text-align:right">Número que a sustenta</th></tr>
-        <tr><td>Grão: uma linha por CVE</td><td class="n">1.710 / 1.710 · 0 duplicatas</td></tr>
+        <tr><td>Grão: uma linha por CVE</td><td class="n">1.713 / 1.713 · 0 duplicatas</td></tr>
         <tr><td>Grão por produto descartado</td><td class="n">214 ambíguos (12,5%)</td></tr>
         <tr><td>Limpeza na camada trusted</td><td class="n">18 → 0</td></tr>
         <tr><td>Schema em IaC, sem Crawler</td><td class="n">15 colunas · USD 0,073 evitados</td></tr>

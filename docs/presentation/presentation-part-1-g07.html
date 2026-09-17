@@ -251,8 +251,8 @@ tr.lead td { color: var(--accent); }
     <div class="col col-narrow">
       <div class="stat-row" style="flex-direction:column;gap:0.26in">
         <div class="stat">
-          <div class="v">1,710</div>
-          <div class="l">CVEs in the catalog<br>(catalogVersion 2026.09.14)</div>
+          <div class="v">1,713</div>
+          <div class="l">CVEs in the catalog<br>(catalogVersion 2026.09.16)</div>
         </div>
         <div class="stat">
           <div class="v">296</div>
@@ -276,7 +276,7 @@ tr.lead td { color: var(--accent); }
       <div class="arch">
         <div class="node">
           <div class="t">CISA KEV — public feed</div>
-          <div class="d">JSON, no authentication, 1,722,859 bytes</div>
+          <div class="d">JSON, no authentication, 1,727,984 bytes</div>
         </div>
         <div class="arrow">▼ <span>ingest.sh — 5 quality gates</span></div>
         <div class="node">
@@ -286,7 +286,7 @@ tr.lead td { color: var(--accent); }
         <div class="arrow">▼ <span>cleaned and typed → NDJSON</span></div>
         <div class="node">
           <div class="t">S3 · eda262-g07-lake-trusted</div>
-          <div class="d">1,710 rows · 1,497,926 bytes</div>
+          <div class="d">1,713 rows · 1,502,572 bytes</div>
         </div>
         <div class="arrow">▼ <span>schema declared in IaC</span></div>
         <div class="node">
@@ -325,7 +325,7 @@ tr.lead td { color: var(--accent); }
             <span class="num">count(*) − count(DISTINCT cve_id)</span> and must return 0.</li>
         <li>Alternative evaluated and <b>rejected with a number</b>: a grain per
             (CVE, product).</li>
-        <li><span class="num">214 of 1,710</span> <b>product</b> values (12.5%) carry an
+        <li><span class="num">214 of 1,713</span> <b>product</b> values (12.5%) carry an
             ambiguous separator.</li>
       </ul>
       <div class="code" style="margin-top:0.1in">"NetScaler ADC <b style="color:#e8710a">and</b> NetScaler Gateway"   → 2 products
@@ -337,8 +337,8 @@ tr.lead td { color: var(--accent); }
     </div>
     <div class="col col-narrow">
       <div class="stat-row" style="flex-direction:column;gap:0.26in">
-        <div class="stat"><div class="v">1,710</div><div class="l">rows in the trusted table</div></div>
-        <div class="stat"><div class="v">1,710</div><div class="l">distinct cve_id</div></div>
+        <div class="stat"><div class="v">1,713</div><div class="l">rows in the trusted table</div></div>
+        <div class="stat"><div class="v">1,713</div><div class="l">distinct cve_id</div></div>
         <div class="stat"><div class="v">0</div><div class="l">duplicates — the grain holds</div></div>
       </div>
     </div>
@@ -354,10 +354,10 @@ tr.lead td { color: var(--accent); }
       <table>
         <tr><th>Problem measured at source</th><th style="text-align:right">Before</th><th style="text-align:right">After</th></tr>
         <tr class="lead"><td>Stray whitespace in vendor / product</td><td class="n">18</td><td class="n">0</td></tr>
-        <tr><td>"Known" / "Unknown" as text</td><td class="n">360 / 1,350</td><td class="n">boolean</td></tr>
-        <tr><td>"Yes" / "No" as text</td><td class="n">52 / 1,658</td><td class="n">boolean</td></tr>
+        <tr><td>"Known" / "Unknown" as text</td><td class="n">360 / 1,353</td><td class="n">boolean</td></tr>
+        <tr><td>"Yes" / "No" as text</td><td class="n">55 / 1,658</td><td class="n">boolean</td></tr>
         <tr><td>cwes without a precomputed count</td><td class="n">array</td><td class="n">int</td></tr>
-        <tr><td>1 JSON object with a nested array</td><td class="n">1 row</td><td class="n">1,710 rows</td></tr>
+        <tr><td>1 JSON object with a nested array</td><td class="n">1 row</td><td class="n">1,713 rows</td></tr>
       </table>
       <p style="font-size:11pt;color:#5f5f5f;margin-top:0.2in;line-height:1.45">
         Ingestion only publishes if the <b>5 gates</b> pass. The grain gate blocks the upload —
@@ -461,11 +461,12 @@ tr.lead td { color: var(--accent); }
     <div class="col">
       <table>
         <tr><th>Measurement</th><th style="text-align:right">Value</th></tr>
-        <tr><td>Volume scanned by the query</td><td class="n">1,497,926 B</td></tr>
+        <tr><td>Trusted table size</td><td class="n">1,502,572 B</td></tr>
+        <tr class="lead"><td>Volume scanned (measured)</td><td class="n">3,005,144 B</td></tr>
         <tr><td>Athena minimum billed</td><td class="n">10,485,760 B</td></tr>
-        <tr class="lead"><td>Volume actually billed</td><td class="n">10,485,760 B</td></tr>
+        <tr><td>Volume actually billed</td><td class="n">10,485,760 B</td></tr>
         <tr><td>Price (us-east-1)</td><td class="n">USD 5.00 / TB</td></tr>
-        <tr><td>Queries per USD 1.00</td><td class="n">≈ 20,971</td></tr>
+        <tr><td>Queries per USD 1.00</td><td class="n">≈ 20,973</td></tr>
       </table>
       <div class="hero" style="margin-top:0.3in">
         <div class="v">USD 0.00004768</div>
@@ -475,10 +476,12 @@ tr.lead td { color: var(--accent); }
     <div class="col col-narrow">
       <div class="kicker">Why we did not use Parquet</div>
       <ul style="margin-top:0.1in">
-        <li>The whole dataset fits <span class="num">7 times</span> inside the 10 MB
-            minimum billing unit.</li>
-        <li>Parquet, partitioning and compression would cut <b>bytes read</b>...</li>
-        <li>...and <b>not one cent</b> of the bill: billing is already at the floor.</li>
+        <li>The query scans <span class="num">3.0 MB</span> and fits <span class="num">3.5x</span>
+            inside the 10 MB minimum billing unit.</li>
+        <li>The scan is <b>2.00x the table</b>: the scalar subquery makes Athena read the
+            data twice — only found by measuring.</li>
+        <li>Parquet and partitioning would cut <b>bytes read</b> — and <b>not one cent</b> of the
+            bill, which is already at the floor.</li>
         <li>Measured saving from the optimization: <span class="num">USD 0.00</span>.</li>
         <li>It belongs to Part 2, once volume clears the floor — a decision by number,
             not by calendar.</li>
@@ -532,7 +535,7 @@ tr.lead td { color: var(--accent); }
     <div class="col">
       <table>
         <tr><th>Decision</th><th style="text-align:right">The number behind it</th></tr>
-        <tr><td>Grain: one row per CVE</td><td class="n">1,710 / 1,710 · 0 duplicates</td></tr>
+        <tr><td>Grain: one row per CVE</td><td class="n">1,713 / 1,713 · 0 duplicates</td></tr>
         <tr><td>Per-product grain rejected</td><td class="n">214 ambiguous (12.5%)</td></tr>
         <tr><td>Cleaning in the trusted layer</td><td class="n">18 → 0</td></tr>
         <tr><td>Schema in IaC, no Crawler</td><td class="n">15 columns · USD 0.073 avoided</td></tr>

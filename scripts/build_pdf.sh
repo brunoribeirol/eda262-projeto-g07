@@ -46,15 +46,36 @@ render() {
   [[ -f "${src}" ]] || die "deck not found: ${src}"
   log "Rendering ${label}"
 
+  # Each render gets its OWN profile directory. Reusing one across sequential
+  # Chrome invocations makes the second instance find the first profile's lock
+  # and block indefinitely on ProcessSingleton -- it hangs rather than failing.
+  local profile
+  profile="$(mktemp -d "${PROFILE_DIR}/chrome-XXXXXX")"
+
   # --virtual-time-budget lets webfonts and layout settle before the snapshot.
+  # The timeout is a backstop: a wedged Chrome must not stall the pipeline.
   "${CHROME}" \
     --headless \
     --disable-gpu \
-    --user-data-dir="${PROFILE_DIR}" \
+    --no-first-run \
+    --no-default-browser-check \
+    --user-data-dir="${profile}" \
     --no-pdf-header-footer \
     --virtual-time-budget=5000 \
     --print-to-pdf="${out}" \
-    "file://${src}" >/dev/null 2>&1
+    "file://${src}" >/dev/null 2>&1 &
+
+  local chrome_pid=$!
+  local waited=0
+  while kill -0 "${chrome_pid}" 2>/dev/null; do
+    if (( waited >= 90 )); then
+      kill -9 "${chrome_pid}" 2>/dev/null || true
+      die "Chrome hung rendering ${label} (90s). Open ${src} and print manually (margins: none, background graphics: on)."
+    fi
+    sleep 1
+    waited=$(( waited + 1 ))
+  done
+  wait "${chrome_pid}" 2>/dev/null || true
 
   [[ -s "${out}" ]] || die "Chrome produced no PDF for ${label}. Open ${src} and print manually (margins: none, background graphics: on)."
 

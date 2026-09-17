@@ -1,0 +1,12 @@
+{
+  "catalog_version": "2026.09.16",
+  "ingested_at": "2026-09-17T11:30:29Z",
+  "raw_uri": "s3://eda262-g07-lake-raw/kev/",
+  "trusted_uri": "s3://eda262-g07-lake-trusted/kev_vulnerabilities/",
+  "source_records": 1713,
+  "trusted_rows": 1713,
+  "distinct_cve_id": 1713,
+  "raw_bytes": 1727984,
+  "trusted_bytes": 1502572,
+  "grain": "one row per cve_id"
+}
