@@ -26,13 +26,13 @@ over the last 12 months — and what does that query cost in Athena?
         │  scripts/ingest.sh
         ▼
   ┌─────────────────────────┐
-  │  eda262-g07-lake-raw    │   source document, byte-for-byte (1,722,859 B)
+  │  eda262-g07-lake-raw    │   source document, byte-for-byte (1,727,984 B)
   └───────────┬─────────────┘
               │  raw → trusted: NDJSON, cleaned and typed
               │  5 data-quality gates (grain is validated before publishing)
               ▼
   ┌─────────────────────────┐
-  │ eda262-g07-lake-trusted │   1,710 rows, one per CVE (1,497,926 B)
+  │ eda262-g07-lake-trusted │   1,713 rows, one per CVE (1,502,572 B)
   └───────────┬─────────────┘
               │  schema declared in IaC — no Glue Crawler
               ▼
@@ -181,7 +181,7 @@ docs/
 
 Full detail with numbers in [`DECISIONS.md`](DECISIONS.md).
 
-- **Grain:** one row per CVE — 1,710 rows, 1,710 distinct `cve_id`, **0** duplicates.
+- **Grain:** one row per CVE — 1,713 rows, 1,713 distinct `cve_id`, **0** duplicates.
 - **No Glue Crawler:** 15 columns declared in IaC; avoids ~USD 0.073 per crawl and type drift
   between runs.
 - **Cost per query:** **USD 0.00004768** — the query scans 3.0 MB and fits 3.5x inside

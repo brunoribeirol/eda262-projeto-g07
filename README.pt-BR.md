@@ -25,13 +25,13 @@ ativamente exploradas nos últimos 12 meses — e quanto custa essa consulta no 
         │  scripts/ingest.sh
         ▼
   ┌─────────────────────────┐
-  │  eda262-g07-lake-raw    │   documento original, byte a byte (1.722.859 B)
+  │  eda262-g07-lake-raw    │   documento original, byte a byte (1.727.984 B)
   └───────────┬─────────────┘
               │  raw → trusted: NDJSON, limpo e tipado
               │  5 barreiras de qualidade (a grain é validada antes de publicar)
               ▼
   ┌─────────────────────────┐
-  │ eda262-g07-lake-trusted │   1.710 linhas, 1 por CVE (1.497.926 B)
+  │ eda262-g07-lake-trusted │   1.713 linhas, 1 por CVE (1.502.572 B)
   └───────────┬─────────────┘
               │  schema declarado em IaC — sem Glue Crawler
               ▼
@@ -182,7 +182,7 @@ docs/
 
 O detalhamento com números está em [`DECISOES.md`](DECISOES.md).
 
-- **Granularidade:** uma linha por CVE — 1.710 linhas, 1.710 `cve_id` distintos, **0** duplicatas.
+- **Granularidade:** uma linha por CVE — 1.713 linhas, 1.713 `cve_id` distintos, **0** duplicatas.
 - **Sem Glue Crawler:** schema de 15 colunas declarado em IaC; evita ~USD 0,073 por execução e
   variação de tipo entre *crawls*.
 - **Custo por consulta:** **USD 0,00004768** — a consulta varre 3,0 MB e cabe 3,5× dentro do mínimo
