@@ -15,10 +15,18 @@ workspace. No streaming, no partitioning/Parquet, no multi-layer medallion -- th
 to Part 2.
 
 ## Main modules
-- `parte-1/` — Part 1 (AV1) Terraform: S3 + Glue Data Catalog + Athena WorkGroup (not yet created).
+- `parte-1/` — Part 1 (AV1) Terraform: S3 raw/trusted/results buckets, Glue Data Catalog and an Athena
+  WorkGroup, packaged as the `modules/data-lake` module behind an S3 + DynamoDB remote backend
+  (`parte-1/bootstrap/`) and a Terraform workspace.
 - `parte-2/` — Part 2 (AV2) Terraform, added later: partitioned Parquet, Lake Formation, idempotent ingestion.
-- `verificacao/verifica.sh` — acceptance script the evaluator runs (not yet created).
-- `DECISOES.md` — engineering decisions with measured numbers, at repo root (not yet created).
+- `scripts/` — operational pipeline: `bootstrap.sh`, `deploy.sh`, `ingest.sh`, `run_query.sh`, `destroy.sh`,
+  `build_pdf.sh`, and `run_all.sh` which chains them. `kev_to_trusted.jq` holds the raw→trusted
+  transformation, isolated so it can be tested without AWS.
+- `verificacao/verifica.sh` — acceptance script the evaluator runs; 25 criteria, prints PASSA/FALHA.
+- `DECISOES.md` — engineering decisions with measured numbers, at repo root (`DECISIONS.md` mirrors it
+  in English; the Portuguese file is the graded copy).
+- `docs/presentation/` — slide decks (PT and EN) sharing a byte-identical stylesheet.
+- `docs/evidence/` — output of a real run: query cost, business-question result, grain proof.
 
 Mandatory layout per the course guide: Terraform lives at repo root in `parte-1/`/`parte-2/`, **not** nested
 under any `academic/` subfolder.
@@ -27,11 +35,14 @@ under any `academic/` subfolder.
 - Compatibility: AWS resources named `eda262-g07-<resource>`, tagged `turma=eda262`, `grupo=g07`,
   `projeto=engenharia-de-dados`, per the course guide's mandatory naming convention.
 - Security: no Crawler, no auth-heavy data source (CISA KEV is public, unauthenticated).
-- Data: CISA KEV feed only for Part 1; NVD/EPSS explicitly out of scope for now.
+- Data: CISA KEV feed only for Part 1. EPSS is the agreed Part 2 fact table (KEV becomes a dimension);
+  it is deliberately out of scope here, because KEV sits under Athena's 10 MB billing floor and the
+  Part 1 cost argument depends on that.
 - Operations: solo/group-run, not production — T0 tier (see `.agents/state/tier.md`).
 
 ## Sources of truth
-- Code: this repository (Terraform, once written).
+- Code: this repository. The Terraform is written and passes `terraform validate` against aws
+  provider 6.64.0.
 - API/schema: CISA KEV JSON feed (public, unauthenticated); trusted table schema declared in Glue, not crawled.
 - Product requirements: `docs/COURSE_REQUIREMENTS.md` (structured rubric summary), `docs/project/guia_do_projeto.pdf`
   (original official PDF), `.agents/steering/product.md`.
