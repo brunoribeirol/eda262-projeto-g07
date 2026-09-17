@@ -89,8 +89,13 @@ render() {
   fi
 
   # A 10-slide deck must render as 10 pages; a mismatch means the page box broke.
-  local pages
-  pages="$(grep -ac '/Type[[:space:]]*/Page[^s]' "${out}" 2>/dev/null || echo 0)"
+  # Count /Type /Page and subtract /Type /Pages (the tree node). Excluding the
+  # plural with a [^s] class silently fails whenever /Page ends a line, since
+  # grep matches line by line -- that produced a bogus "0 pages" warning.
+  local total plural pages
+  total="$(LC_ALL=C grep -a -o '/Type[[:space:]]*/Page' "${out}" 2>/dev/null | wc -l | tr -d ' ')"
+  plural="$(LC_ALL=C grep -a -o '/Type[[:space:]]*/Pages' "${out}" 2>/dev/null | wc -l | tr -d ' ')"
+  pages=$(( total - plural ))
   local size_kb=$(( $(wc -c < "${out}") / 1024 ))
 
   ok "${label}: ${out} (${size_kb} KB, ~${pages} pages)"
