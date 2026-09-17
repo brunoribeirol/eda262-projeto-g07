@@ -75,9 +75,12 @@ An AWS account allowed to create S3, Glue, Athena and DynamoDB resources.
 **Default region: `us-east-1`** (the Athena price quoted in `DECISIONS.md` is that region's).
 
 ```bash
-aws configure --profile de
-aws sts get-caller-identity --profile de
+aws configure                 # or export AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+aws sts get-caller-identity   # must return your account
 ```
+
+Every script uses the default AWS credential chain. If you keep this project under a named
+profile, add `--profile <name>` to any command below — all of them accept it.
 
 ---
 
@@ -86,7 +89,7 @@ aws sts get-caller-identity --profile de
 ### One command
 
 ```bash
-scripts/run_all.sh --profile de
+scripts/run_all.sh
 ```
 
 Provisions, ingests, measures the cost, renders the decks and runs the verification — producing
@@ -100,19 +103,19 @@ Four commands, in order. Each one validates the previous step before proceeding.
 ```bash
 # 1. Create the remote backend (state bucket + lock table) and generate parte-1/backend.hcl.
 #    Run once per AWS account.
-scripts/bootstrap.sh --profile de --region us-east-1
+scripts/bootstrap.sh --region us-east-1
 
 # 2. Provision the data lake in the 'av1' delivery workspace.
-scripts/deploy.sh --profile de --region us-east-1
+scripts/deploy.sh --region us-east-1
 
 # 3. Ingest the KEV catalog: raw → trusted, through the quality gates.
-scripts/ingest.sh --profile de
+scripts/ingest.sh
 
 # 4. Run the business question and measure the real cost in Athena.
-scripts/run_query.sh --profile de
+scripts/run_query.sh
 ```
 
-To review before applying: `scripts/deploy.sh --profile de --plan-only`.
+To review before applying: `scripts/deploy.sh --plan-only`.
 
 ### What each step produces
 
@@ -128,7 +131,7 @@ To review before applying: `scripts/deploy.sh --profile de --plan-only`.
 ## Verification
 
 ```bash
-verificacao/verifica.sh --profile de     # repository + AWS resources
+verificacao/verifica.sh     # repository + AWS resources
 verificacao/verifica.sh --repo-only      # static criteria only, no AWS
 ```
 
@@ -139,8 +142,8 @@ Prints `PASSA`/`FALHA` per criterion and exits `0` only if all of them pass.
 ## Teardown
 
 ```bash
-scripts/destroy.sh --profile de                     # remove the data lake
-scripts/destroy.sh --profile de --include-backend   # also remove the backend (irreversible)
+scripts/destroy.sh                     # remove the data lake
+scripts/destroy.sh --include-backend   # also remove the backend (irreversible)
 ```
 
 The script does not trust Terraform's exit code: after `destroy` it queries AWS for each of the

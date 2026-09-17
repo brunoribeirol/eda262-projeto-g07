@@ -76,9 +76,12 @@ Conta AWS com permissão para criar recursos de S3, Glue, Athena e DynamoDB.
 **Região padrão: `us-east-1`** (o preço do Athena em `DECISOES.md` é o dessa região).
 
 ```bash
-aws configure --profile de     # ou use suas credenciais padrão
-aws sts get-caller-identity --profile de
+aws configure                 # ou exporte AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+aws sts get-caller-identity   # deve retornar a sua conta
 ```
+
+Todos os scripts usam a cadeia de credenciais padrão da AWS. Se você mantém este projeto em um
+perfil nomeado, acrescente `--profile <nome>` a qualquer comando abaixo — todos aceitam.
 
 ---
 
@@ -87,7 +90,7 @@ aws sts get-caller-identity --profile de
 ### Um comando
 
 ```bash
-scripts/run_all.sh --profile de
+scripts/run_all.sh
 ```
 
 Provisiona, ingere, mede o custo, gera os PDFs e roda a verificação — produzindo todas as
@@ -101,19 +104,19 @@ Quatro comandos, em ordem. Cada um valida o anterior antes de prosseguir.
 ```bash
 # 1. Cria o backend remoto (bucket de estado + tabela de lock) e gera parte-1/backend.hcl.
 #    Roda uma única vez por conta AWS.
-scripts/bootstrap.sh --profile de --region us-east-1
+scripts/bootstrap.sh --region us-east-1
 
 # 2. Provisiona o data lake no workspace de entrega 'av1'.
-scripts/deploy.sh --profile de --region us-east-1
+scripts/deploy.sh --region us-east-1
 
 # 3. Ingere o catálogo KEV: raw → trusted, com as barreiras de qualidade.
-scripts/ingest.sh --profile de
+scripts/ingest.sh
 
 # 4. Executa a consulta de negócio e mede o custo real no Athena.
-scripts/run_query.sh --profile de
+scripts/run_query.sh
 ```
 
-Para revisar antes de aplicar: `scripts/deploy.sh --profile de --plan-only`.
+Para revisar antes de aplicar: `scripts/deploy.sh --plan-only`.
 
 ### O que cada passo produz
 
@@ -129,7 +132,7 @@ Para revisar antes de aplicar: `scripts/deploy.sh --profile de --plan-only`.
 ## Verificação
 
 ```bash
-verificacao/verifica.sh --profile de       # repositório + recursos na AWS
+verificacao/verifica.sh       # repositório + recursos na AWS
 verificacao/verifica.sh --repo-only     # apenas critérios estáticos, sem AWS
 ```
 
@@ -140,8 +143,8 @@ Imprime `PASSA`/`FALHA` por critério e retorna `0` somente se todos passarem.
 ## Destruição
 
 ```bash
-scripts/destroy.sh --profile de                     # remove o data lake
-scripts/destroy.sh --profile de --include-backend   # remove também o backend (irreversível)
+scripts/destroy.sh                     # remove o data lake
+scripts/destroy.sh --include-backend   # remove também o backend (irreversível)
 ```
 
 O script não confia no código de saída do Terraform: depois do `destroy` ele consulta a AWS por
