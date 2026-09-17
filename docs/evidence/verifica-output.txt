@@ -1,0 +1,39 @@
+Verificacao EDA262 -- Parte 1 (AV1) -- grupo g07
+repositorio: /Users/brunoribeiro/Documents/Projects/academic/eda262-projeto-g07
+
+1. Estrutura do repositorio
+PASSA  Terraform da Parte 1 em parte-1/ na raiz do repositorio
+PASSA  DECISOES.md na raiz do repositorio
+PASSA  README.md com instrucoes de deploy/destroy
+PASSA  Script de aceitacao em verificacao/verifica.sh
+PASSA  Apresentacao apresentacao-parte-1-g07.pdf gerada
+
+2. Infraestrutura como codigo
+PASSA  Terraform empacotado como modulo
+PASSA  Backend remoto declarado (S3 + DynamoDB)
+PASSA  Workspace do Terraform em uso
+PASSA  Schema declarado em IaC (colunas explicitas)
+PASSA  Nenhum recurso aws_glue_crawler no codigo
+PASSA  Tags obrigatorias declaradas (turma/grupo/projeto)
+
+3. Decisoes e evidencias
+PASSA  DECISOES.md cobre granularidade e custo com numeros
+PASSA  Custo por query medido e registrado
+PASSA  Granularidade comprovada (0 cve_id duplicado)
+PASSA  Resultado da consulta de negocio salvo
+
+4. Recursos provisionados na AWS
+PASSA  Bucket da camada raw (eda262-g07-lake-raw)
+PASSA  Bucket da camada trusted (eda262-g07-lake-trusted)
+PASSA  Bucket de resultados do Athena
+PASSA  Banco no Glue Data Catalog (eda262_g07_kev)
+PASSA  Tabela trusted com granularidade declarada
+PASSA  Tabela nao foi criada por Crawler
+PASSA  Nenhum Glue Crawler provisionado na conta
+PASSA  Athena WorkGroup (eda262-g07-wg)
+PASSA  Dados carregados na camada trusted
+PASSA  Tags obrigatorias aplicadas nos recursos
+
+------------------------------------------------------------
+Resultado: 25 PASSA / 0 FALHA  (total: 25 criterios)
+Todos os criterios foram atendidos.
