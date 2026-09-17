@@ -66,18 +66,27 @@ render() {
     "file://${src}" >/dev/null 2>&1 &
 
   local chrome_pid=$!
-  local waited=0
+  local waited=0 hung=0
   while kill -0 "${chrome_pid}" 2>/dev/null; do
     if (( waited >= 90 )); then
       kill -9 "${chrome_pid}" 2>/dev/null || true
-      die "Chrome hung rendering ${label} (90s). Open ${src} and print manually (margins: none, background graphics: on)."
+      hung=1
+      break
     fi
     sleep 1
     waited=$(( waited + 1 ))
   done
   wait "${chrome_pid}" 2>/dev/null || true
 
-  [[ -s "${out}" ]] || die "Chrome produced no PDF for ${label}. Open ${src} and print manually (margins: none, background graphics: on)."
+  # Chrome frequently writes a complete PDF and then fails to exit. Judge the
+  # result by the artifact, not by the process: a finished PDF ends with %%EOF.
+  if [[ -s "${out}" ]] && tail -c 1024 "${out}" | grep -q '%%EOF'; then
+    [[ "${hung}" -eq 1 ]] && warn "Chrome did not exit on its own for ${label}; the PDF is complete, continuing."
+  elif [[ "${hung}" -eq 1 ]]; then
+    die "Chrome hung rendering ${label} (90s) and wrote no complete PDF. Open ${src} and print manually (margins: none, background graphics: on)."
+  else
+    die "Chrome produced no PDF for ${label}. Open ${src} and print manually (margins: none, background graphics: on)."
+  fi
 
   # A 10-slide deck must render as 10 pages; a mismatch means the page box broke.
   local pages

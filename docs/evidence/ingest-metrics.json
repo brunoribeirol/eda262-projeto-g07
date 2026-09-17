@@ -1,6 +1,6 @@
 {
   "catalog_version": "2026.09.16",
-  "ingested_at": "2026-09-17T11:30:29Z",
+  "ingested_at": "2026-09-17T12:21:54Z",
   "raw_uri": "s3://eda262-g07-lake-raw/kev/",
   "trusted_uri": "s3://eda262-g07-lake-trusted/kev_vulnerabilities/",
   "source_records": 1713,
