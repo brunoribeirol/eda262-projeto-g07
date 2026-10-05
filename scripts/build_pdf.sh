@@ -88,7 +88,8 @@ render() {
     die "Chrome produced no PDF for ${label}. Open ${src} and print manually (margins: none, background graphics: on)."
   fi
 
-  # A 10-slide deck must render as 10 pages; a mismatch means the page box broke.
+  # Each <section class="slide"> must render as exactly one page; a mismatch means
+  # the page box broke.
   # Count /Type /Page and subtract /Type /Pages (the tree node). Excluding the
   # plural with a [^s] class silently fails whenever /Page ends a line, since
   # grep matches line by line -- that produced a bogus "0 pages" warning.
@@ -99,8 +100,10 @@ render() {
   local size_kb=$(( $(wc -c < "${out}") / 1024 ))
 
   ok "${label}: ${out} (${size_kb} KB, ~${pages} pages)"
-  if [[ "${pages}" != "10" ]]; then
-    warn "expected 10 pages, detected ~${pages}. Open the PDF and confirm one slide per page."
+  local expected
+  expected="$(grep -c 'class="slide' "${src}")"
+  if [[ "${pages}" != "${expected}" ]]; then
+    warn "expected ${expected} pages, detected ~${pages}. Open the PDF and confirm one slide per page."
   fi
 }
 

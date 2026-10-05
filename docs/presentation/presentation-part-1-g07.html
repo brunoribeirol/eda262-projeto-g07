@@ -200,6 +200,59 @@ tr.lead td { color: var(--accent); }
   overflow: hidden;
 }
 
+/* --- simple flow (left to right) ---------------------------------------- */
+
+.flow { display: flex; align-items: stretch; gap: 0.14in; margin-top: 0.4in; }
+.step { flex: 1; border-top: 4px solid var(--rule); padding-top: 0.16in; }
+.step.accent { border-top-color: var(--accent); }
+.step .n { font-size: 13pt; font-weight: bold; color: var(--accent); letter-spacing: 1pt; }
+.step .t { font-size: 28pt; font-weight: bold; margin-top: 0.06in; }
+.step .d { font-size: 16pt; line-height: 1.45; margin-top: 0.1in; }
+.step .tech { font-size: 11pt; color: var(--ink-soft); margin-top: 0.12in; }
+.flow .sep { flex: none; align-self: center; font-size: 20pt; color: var(--accent); }
+
+.note {
+  margin-top: 0.75in;
+  margin-bottom: 0.35in;
+  border-left: 5px solid var(--accent);
+  padding: 0.08in 0 0.08in 0.24in;
+  font-size: 15pt;
+  line-height: 1.45;
+}
+
+
+/* --- two-column split (slide 4) ------------------------------------------ */
+
+.split { display: flex; gap: 0.6in; flex: 1; min-height: 0; }
+.split > div { flex: 1; min-width: 0; }
+.split .owner { font-size: 10pt; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1.2pt; margin-bottom: 0.1in; }
+.split .big { font-size: 54pt; font-weight: bold; line-height: 1; color: var(--accent); }
+.split .big-l { font-size: 15pt; margin-top: 0.12in; line-height: 1.4; }
+.split ul { margin-top: 0.3in; }
+.split li { font-size: 13.5pt; }
+
+/* --- demo evidence (slide 7) -------------------------------------------------
+   Each screenshot is cropped with CSS to the lines that matter: background-size
+   scales the source so the crop width fills the box, background-position picks
+   the crop origin, and aspect-ratio matches the crop. */
+
+.demo { flex: 1; min-height: 0; display: flex; gap: 0.3in; margin-bottom: 0.4in; }
+.demo .main { flex: 1.5; min-width: 0; }
+.demo .side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.16in; }
+.shot .cap { font-size: 10.5pt; font-weight: bold; margin-bottom: 0.06in; }
+.shot .cap .n { color: var(--accent); }
+.crop {
+  width: calc(100% - 0.12in);
+  background-color: #0a0a0a;
+  background-repeat: no-repeat;
+  border: 0.06in solid #0a0a0a;
+  box-sizing: content-box;
+}
+.crop.apply    { background-image: url(img/demo-apply.png);    aspect-ratio: 1200 / 215; background-size: 121.5% auto; background-position: 7.75% 83.4%; }
+.crop.query    { background-image: url(img/demo-query.png);    aspect-ratio: 1720 / 850; background-size: 116.28% auto; background-position: 3.57% 39.2%; }
+.crop.verifica { background-image: url(img/demo-verifica.png); aspect-ratio: 1030 / 260; background-size: 100% auto; background-position: 0 100%; }
+.crop.destroy  { background-image: url(img/demo-destroy.png);  aspect-ratio: 702 / 120;  background-size: 100% auto; background-position: 0 0; }
+
 /* --- print ----------------------------------------------------------- */
 
 @page { size: 13.333in 7.5in; margin: 0; }
@@ -213,214 +266,125 @@ tr.lead td { color: var(--accent); }
   }
   .slide:last-child { page-break-after: auto; break-after: auto; }
 }
-</style></head>
+</style>
+</head>
 <body>
 
-<!-- 1 ---------------------------------------------------------------------->
+<!-- 1 · Bruno ----------------------------------------------------------------->
 <section class="slide cover">
   <div class="kicker">EDA262 &middot; Data Engineering &middot; Part 1 (AV1)</div>
-  <h1>Where the vulnerabilities already being exploited are concentrated</h1>
+  <h1>Which vendors concentrate the vulnerabilities already exploited in real attacks?</h1>
   <div class="rule"></div>
   <div class="sub">
-    An AWS data lake provisioned 100% in Terraform over the public CISA KEV catalog,
-    with a measured query cost.
+    An AWS data lake, 100% Terraform, that answers this question with public CISA data &mdash;
+    and measures what every answer costs.
   </div>
   <div class="meta" style="margin-top:0.42in">
     <b>Group g07</b> &nbsp;·&nbsp; CESAR School &nbsp;·&nbsp; 2026.2<br>
-    Members: Bruno Ribeiro &nbsp;·&nbsp; Emanuel Eduardo &nbsp;·&nbsp; Igor Alves<br>
+    Bruno Ribeiro &nbsp;·&nbsp; Emanuel Eduardo &nbsp;·&nbsp; Igor Alves &nbsp;·&nbsp;
     Leonardo Amaral &nbsp;·&nbsp; Victor Guilherme &nbsp;·&nbsp; Vinícius Petribu
   </div>
 </section>
 
-<!-- 2 ---------------------------------------------------------------------->
+<!-- 2 · Bruno ----------------------------------------------------------------->
 <section class="slide">
-  <h2>Scenario and business question</h2>
+  <h2>Why the KEV catalog: the real-attack filter</h2>
   <div class="body">
     <div class="col">
       <ul>
-        <li><b>CISA</b> publishes the <b>KEV</b> catalog: vulnerabilities with
-            <b>confirmed exploitation in real attacks</b> — not theoretical ones.</li>
-        <li>Every security team faces the same scarcity: <b>more CVEs than capacity
-            to patch</b>.</li>
-        <li>The question that sets the remediation queue:
-            <b>which vendors concentrate the exploited vulnerabilities of the last
-            12 months?</b></li>
-        <li>And the question that drives the architecture:
-            <b>what does answering it cost in Athena?</b></li>
+        <li><b>KEV</b> (<i>Known Exploited Vulnerabilities</i>) is the official catalog of <b>CISA</b>,
+            the US cybersecurity agency: a CVE only gets in with <b>confirmed exploitation</b>.</li>
+        <li>It carries weight: US federal agencies have a <b>mandatory deadline</b> to fix
+            whatever enters it (directive BOD 22-01).</li>
+        <li><b>Real, live data</b>: public, free, and updated every week.
+            It grew from 1,713 to <span class="num">1,734</span> in 18 days.</li>
       </ul>
-    </div>
-    <div class="col col-narrow">
-      <div class="stat-row" style="flex-direction:column;gap:0.26in">
-        <div class="stat">
-          <div class="v">1,713</div>
-          <div class="l">CVEs in the catalog<br>(catalogVersion 2026.09.16)</div>
-        </div>
-        <div class="stat">
-          <div class="v">299</div>
-          <div class="l">added in the last 12 months</div>
-        </div>
-        <div class="stat">
-          <div class="v">118</div>
-          <div class="l">distinct vendors in the window</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="foot"><span>Scenario and question</span><span>g07 · EDA262 · Part 1</span></div>
-</section>
-
-<!-- 3 ---------------------------------------------------------------------->
-<section class="slide">
-  <h2>Provisioned architecture</h2>
-  <div class="body">
-    <div class="col">
-      <div class="arch">
-        <div class="node">
-          <div class="t">CISA KEV — public feed</div>
-          <div class="d">JSON, no authentication, 1,727,984 bytes</div>
-        </div>
-        <div class="arrow">▼ <span>ingest.sh — 5 quality gates</span></div>
-        <div class="node">
-          <div class="t">S3 · eda262-g07-lake-raw</div>
-          <div class="d">source document, byte-for-byte — proof of origin</div>
-        </div>
-        <div class="arrow">▼ <span>cleaned and typed → NDJSON</span></div>
-        <div class="node">
-          <div class="t">S3 · eda262-g07-lake-trusted</div>
-          <div class="d">1,713 rows · 1,502,572 bytes</div>
-        </div>
-        <div class="arrow">▼ <span>schema declared in IaC</span></div>
-        <div class="node">
-          <div class="t">Glue Data Catalog · eda262_g07_kev</div>
-          <div class="d">kev_vulnerabilities — 15 columns, no Crawler</div>
-        </div>
-        <div class="arrow">▼</div>
-        <div class="node accent">
-          <div class="t">Athena WorkGroup · eda262-g07-wg</div>
-          <div class="d">100 MB per-query cap, enforced at the WorkGroup</div>
-        </div>
+      <div class="note" style="margin-top:0.3in;margin-bottom:0">
+        <b>Our question:</b> which vendors concentrate the exploited vulnerabilities of the last
+        12 months &mdash; and what does it cost to answer that?
       </div>
     </div>
     <div class="col col-narrow">
-      <ul>
-        <li><b>100% Terraform</b>, packaged as a module.</li>
-        <li>Remote backend <b>S3 + DynamoDB</b>, with a workspace.</li>
-        <li>Mandatory tags via the provider's <b>default_tags</b> — a new resource
-            cannot forget them.</li>
-        <li><b>Zero Glue Crawlers</b>: the schema is reviewable code.</li>
-      </ul>
-    </div>
-  </div>
-  <div class="foot"><span>Architecture</span><span>g07 · EDA262 · Part 1</span></div>
-</section>
-
-<!-- 4 ---------------------------------------------------------------------->
-<section class="slide">
-  <h2>Grain: one row per CVE</h2>
-  <div class="body">
-    <div class="col">
-      <ul>
-        <li>The grain is declared <b>in the catalog itself</b>, as a table parameter:
-            <span class="code" style="display:inline;padding:0.02in 0.07in;border:0;border-left:0">grain = "one row per cve_id"</span></li>
-        <li><b>Proven, not asserted:</b> a named query runs
-            <span class="num">count(*) − count(DISTINCT cve_id)</span> and must return 0.</li>
-        <li>Alternative evaluated and <b>rejected with a number</b>: a grain per
-            (CVE, product).</li>
-        <li><span class="num">214 of 1,713</span> <b>product</b> values (12.5%) carry an
-            ambiguous separator.</li>
-      </ul>
-      <div class="code" style="margin-top:0.1in">"NetScaler ADC <b style="color:#e8710a">and</b> NetScaler Gateway"   → 2 products
-"Community Edition <b style="color:#e8710a">and</b> Enterprise Edition" → 1 product</div>
-      <p style="font-size:11pt;color:#5f5f5f;margin-top:0.13in;line-height:1.45">
-        No deterministic rule separates the two cases. Splitting on the separator would inflate
-        the product count through a parsing artifact — in the very indicator the question measures.
-      </p>
-    </div>
-    <div class="col col-narrow">
-      <div class="stat-row" style="flex-direction:column;gap:0.26in">
-        <div class="stat"><div class="v">1,713</div><div class="l">rows in the trusted table</div></div>
-        <div class="stat"><div class="v">1,713</div><div class="l">distinct cve_id</div></div>
-        <div class="stat"><div class="v">0</div><div class="l">duplicates — the grain holds</div></div>
+      <div class="stat-row" style="flex-direction:column;gap:0.3in">
+        <div class="stat"><div class="v">393,026</div><div class="l">CVEs published worldwide (NVD)</div></div>
+        <div class="stat"><div class="v" style="color:var(--accent)">1,713 &nbsp;<span style="font-size:18pt">(0.4%)</span></div><div class="l">with confirmed exploitation (KEV)</div></div>
+        <div class="stat"><div class="v">299</div><div class="l">added in the last 12 months</div></div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Decision 1 · grain</span><span>g07 · EDA262 · Part 1</span></div>
+  <div class="foot"><span>Scenario and question &middot; NVD and KEV measured on 2026-09-16</span><span>g07 · EDA262 · Part 1 · 2/8</span></div>
 </section>
 
-<!-- 5 ---------------------------------------------------------------------->
+<!-- 3 · Emanuel --------------------------------------------------------------->
 <section class="slide">
-  <h2>From the raw layer to the trusted layer</h2>
-  <div class="body">
-    <div class="col">
-      <table>
-        <tr><th>Problem measured at source</th><th style="text-align:right">Before</th><th style="text-align:right">After</th></tr>
-        <tr class="lead"><td>Stray whitespace in vendor / product</td><td class="n">18</td><td class="n">0</td></tr>
-        <tr><td>"Known" / "Unknown" as text</td><td class="n">360 / 1,353</td><td class="n">boolean</td></tr>
-        <tr><td>"Yes" / "No" as text</td><td class="n">55 / 1,658</td><td class="n">boolean</td></tr>
-        <tr><td>cwes without a precomputed count</td><td class="n">array</td><td class="n">int</td></tr>
-        <tr><td>1 JSON object with a nested array</td><td class="n">1 row</td><td class="n">1,713 rows</td></tr>
-      </table>
-      <p style="font-size:11pt;color:#5f5f5f;margin-top:0.2in;line-height:1.45">
-        Ingestion only publishes if the <b>5 gates</b> pass. The grain gate blocks the upload —
-        data that violates the model never reaches the trusted layer.
-      </p>
+  <h2>Architecture: everything provisioned as code</h2>
+  <div class="flow" style="margin-top:0.2in">
+    <div class="step">
+      <div class="n">1</div>
+      <div class="t">Collect</div>
+      <div class="d">Downloads the public CISA feed.</div>
+      <div class="tech">ingest.sh</div>
     </div>
-    <div class="col col-narrow">
-      <div class="kicker">Why this is not cosmetic</div>
-      <ul style="margin-top:0.1in">
-        <li>The value <b>"SimpleHelp "</b> (trailing space) appears in <span class="num">4</span> records.</li>
-        <li>Without <b>TRIM</b>, a future clean occurrence would create <b>two groups</b>
-            in the GROUP BY.</li>
-        <li>That is the difference between a correct ranking and a <b>silently wrong</b> one.</li>
-      </ul>
+    <div class="sep">›</div>
+    <div class="step">
+      <div class="n">2</div>
+      <div class="t">Keep</div>
+      <div class="d">Original copy, byte for byte: proof of origin.</div>
+      <div class="tech">S3 · raw layer</div>
+    </div>
+    <div class="sep">›</div>
+    <div class="step">
+      <div class="n">3</div>
+      <div class="t">Organize</div>
+      <div class="d">Cleans and standardizes: one row per CVE.</div>
+      <div class="tech">S3 · trusted + Glue Catalog</div>
+    </div>
+    <div class="sep">›</div>
+    <div class="step accent">
+      <div class="n">4</div>
+      <div class="t">Ask</div>
+      <div class="d">SQL with a spending cap per query.</div>
+      <div class="tech">Athena WorkGroup (100 MB)</div>
     </div>
   </div>
-  <div class="foot"><span>Decision 2 · quality</span><span>g07 · EDA262 · Part 1</span></div>
+  <div class="note" style="margin-top:0.55in">
+    <b>Terraform</b> packaged as a module &middot; remote state in <b>S3 + DynamoDB</b> &middot;
+    workspace <b>av1</b> &middot; schema declared in code, <b>no Glue Crawler</b>.
+  </div>
+  <div class="foot"><span>Provisioned architecture</span><span>g07 · EDA262 · Part 1 · 3/8</span></div>
 </section>
 
-<!-- 6 ---------------------------------------------------------------------->
+<!-- 4 · Igor (left) + Leonardo (right) ---------------------------------------->
 <section class="slide">
-  <h2>Schema declared in code, no Crawler</h2>
-  <div class="body">
-    <div class="col">
+  <h2>Trustworthy data before any analysis</h2>
+  <div class="split">
+    <div>
+      <div class="owner">Grain</div>
+      <div class="big">0</div>
+      <div class="big-l">duplicate CVEs: <b>1,713 rows, 1,713 distinct CVEs</b>.
+        One row per CVE, proven by query.</div>
       <ul>
-        <li>The <span class="num">15 columns</span> are declared in Terraform and rendered from
-            <b>a single source of truth</b>.</li>
-        <li>A Crawler costs <span class="num">USD 0.073</span> per run
-            <span class="soft">(USD 0.44/DPU-hour, 10-minute minimum — list price)</span>.</li>
-        <li>Against a stable schema it would pay <b>to rediscover what we already know</b> —
-            and could drift types between runs.</li>
-        <li>Schema as code costs <span class="num">USD 0.00</span>, goes through
-            <b>code review</b>, and fails at <b>plan</b>, not in production.</li>
+        <li>Per-product grain rejected: <span class="num">214</span> of 1,713 (12.5%)
+            have an ambiguous product name.</li>
       </ul>
     </div>
-    <div class="col col-narrow">
-      <div class="code">columns = [
-  { cve_id                  string }
-  { vendor_project          string }
-  { product                 string }
-  { date_added              string }
-  { is_known_ransomware_use <b style="color:#e8710a">boolean</b> }
-  { requires_forensic_triage <b style="color:#e8710a">boolean</b> }
-  { cwes              <b style="color:#e8710a">array&lt;string&gt;</b> }
-  { cwe_count                  <b style="color:#e8710a">int</b> }
-  { catalog_version        string }
-  { ingested_at            string }
-  ...
-]</div>
-      <p style="font-size:10pt;color:#5f5f5f;margin-top:0.14in;line-height:1.45">
-        Dates stay <b>string</b> in ISO-8601: in NDJSON every value is text, and forcing
-        <b>date</b> would turn a parse failure into a <b>silent NULL</b> — precisely in the
-        12-month filter.
-      </p>
+    <div>
+      <div class="owner">Quality raw → trusted</div>
+      <div class="big">18 → 0</div>
+      <div class="big-l">names with stray whitespace. Without cleaning, the same vendor
+        becomes <b>two groups</b> in the ranking.</div>
+      <ul>
+        <li><span class="num">5</span> quality gates: if one fails,
+            nothing is published.</li>
+      </ul>
     </div>
   </div>
-  <div class="foot"><span>Decision 3 · schema</span><span>g07 · EDA262 · Part 1</span></div>
+  <div class="foot"><span>Grain and quality</span><span>g07 · EDA262 · Part 1 · 4/8</span></div>
 </section>
 
-<!-- 7 ---------------------------------------------------------------------->
+<!-- 5 · Victor ---------------------------------------------------------------->
 <section class="slide">
-  <h2>The answer: concentration over the last 12 months</h2>
+  <h2>The answer: volume is not risk</h2>
   <div class="body">
     <div class="col">
       <div class="chart">
@@ -434,134 +398,111 @@ tr.lead td { color: var(--accent); }
         <div class="bar-row"><div class="bar-label">Linux</div><div class="bar-track"><div class="bar-fill" style="width:12.5%"></div></div><div class="bar-val">6</div></div>
       </div>
       <div class="chart-note">
-        CVEs added to KEV in the last 12 months, by vendor. Base: 299 CVEs.
-        Top 1 = 16% &nbsp;·&nbsp; top 5 = 33% &nbsp;·&nbsp; top 10 = 44%.
-        Source: <b>docs/evidence/business-question-result.csv</b>.
+        Exploited CVEs added in the last 12 months, by vendor (299 in total).
+        Microsoft alone accounts for 16%.
       </div>
     </div>
     <div class="col col-narrow">
-      <div class="kicker">The finding that reorders the queue</div>
+      <div class="kicker">Linked to ransomware</div>
       <div class="hero" style="margin-top:0.12in">
         <div class="v">10% <span class="soft" style="font-size:18pt">vs</span> 43%</div>
-        <div class="l">share linked to <b>ransomware</b>:<br>
-          Microsoft (5 of 48) &nbsp;·&nbsp; Oracle (3 of 7)</div>
+        <div class="l">Microsoft (5 of 48) &nbsp;·&nbsp; Oracle (3 of 7)</div>
       </div>
-      <p style="font-size:12pt;margin-top:0.24in;line-height:1.5">
-        Volume is <b>not</b> risk. Patching by rank alone treats Oracle as the seventh
-        priority — when nearly half of its KEV entries have already been used in
-        ransomware.
+      <p style="font-size:13pt;margin-top:0.24in;line-height:1.5">
+        Oracle is only 7th by volume, yet almost half of its vulnerabilities
+        have already been used in ransomware.
       </p>
     </div>
   </div>
-  <div class="foot"><span>Result</span><span>g07 · EDA262 · Part 1</span></div>
+  <div class="foot"><span>Result</span><span>g07 · EDA262 · Part 1 · 5/8</span></div>
 </section>
 
-<!-- 8 ---------------------------------------------------------------------->
+<!-- 6 · Vinícius -------------------------------------------------------------->
 <section class="slide">
-  <h2>Measured query cost</h2>
+  <h2>What it costs: measured, not estimated</h2>
   <div class="body">
     <div class="col">
-      <table>
-        <tr><th>Measurement</th><th style="text-align:right">Value</th></tr>
-        <tr><td>Trusted table size</td><td class="n">1,502,572 B</td></tr>
-        <tr class="lead"><td>Volume scanned (measured)</td><td class="n">3,005,144 B</td></tr>
-        <tr><td>Athena minimum billed</td><td class="n">10,485,760 B</td></tr>
-        <tr><td>Volume actually billed</td><td class="n">10,485,760 B</td></tr>
-        <tr><td>Price (us-east-1)</td><td class="n">USD 5.00 / TB</td></tr>
-        <tr><td>Queries per USD 1.00</td><td class="n">≈ 20,973</td></tr>
-      </table>
-      <div class="hero" style="margin-top:0.3in">
+      <div class="hero" style="margin-top:0.2in">
         <div class="v">USD 0.00004768</div>
-        <div class="l">cost per run of the business question</div>
+        <div class="l">per query, read from Athena's own execution</div>
+      </div>
+      <div class="hero" style="margin-top:0.45in">
+        <div class="v">≈ 21,000</div>
+        <div class="l">queries for USD 1.00</div>
       </div>
     </div>
     <div class="col col-narrow">
-      <div class="kicker">Why we did not use Parquet</div>
-      <ul style="margin-top:0.1in">
-        <li>The query scans <span class="num">3.0 MB</span> and fits <span class="num">3.5x</span>
-            inside the 10 MB minimum billing unit.</li>
-        <li>The scan is <b>2.00x the table</b>: the scalar subquery makes Athena read the
-            data twice — only found by measuring.</li>
-        <li>Parquet and partitioning would cut <b>bytes read</b> — and <b>not one cent</b> of the
-            bill, which is already at the floor.</li>
-        <li>Measured saving from the optimization: <span class="num">USD 0.00</span>.</li>
-        <li>It belongs to Part 2, once volume clears the floor — a decision by number,
-            not by calendar.</li>
+      <ul style="margin-top:0.2in">
+        <li>The query scans <span class="num">3 MB</span>; Athena bills a minimum of
+            <span class="num">10 MB</span>. We already pay the floor.</li>
+        <li>Parquet and partitioning would save <span class="num">USD 0.00</span>.
+            They move to Part 2, once volume passes the floor.</li>
+        <li>Re-run from scratch on 2026-10-04 with 1,734 CVEs:
+            <b>same cost</b>.</li>
       </ul>
     </div>
   </div>
-  <div class="foot"><span>Decision 4 · cost</span><span>g07 · EDA262 · Part 1</span></div>
+  <div class="foot"><span>Cost per query</span><span>g07 · EDA262 · Part 1 · 6/8</span></div>
 </section>
 
-<!-- 9 ---------------------------------------------------------------------->
+<!-- 7 · Vinícius -------------------------------------------------------------->
 <section class="slide">
-  <h2>Infrastructure discipline</h2>
-  <div class="body">
-    <div class="col">
-      <ul>
-        <li><b>Module + remote backend + workspace.</b> The <b>av1</b> workspace produces the
-            mandated names; others get a suffix, because S3 bucket names are <b>global</b>.</li>
-        <li><b>The default workspace is blocked</b> by a precondition: it fails at plan, before
-            creating any resource.</li>
-        <li><b>The SQL lives in Terraform</b> as a named query, and the script runs it
-            <b>by ID</b> — what executes cannot drift from what was reviewed.</li>
-        <li><b>Teardown is verified, not assumed:</b> Terraform reports success even when it
-            orphans a resource. We re-check all <span class="num">5</span> against AWS afterwards.</li>
-      </ul>
+  <h2>Demo: from zero to destroy</h2>
+  <div class="demo">
+    <div class="main shot">
+      <div class="cap"><span class="n">2</span> &nbsp;Athena query with measured cost</div>
+      <div class="crop query" role="img" aria-label="run_query.sh"></div>
     </div>
-    <div class="col col-narrow">
-      <div class="kicker">Cost guardrail</div>
-      <div class="stat-row" style="flex-direction:column;gap:0.24in;margin-top:0.1in">
-        <div class="stat">
-          <div class="v">100 MB</div>
-          <div class="l">per-query cap enforced at the WorkGroup — ≈70× the current dataset</div>
-        </div>
-        <div class="stat">
-          <div class="v">25</div>
-          <div class="l">criteria in verifica.sh, with a PASSA / FALHA verdict each</div>
-        </div>
-        <div class="stat">
-          <div class="v">0</div>
-          <div class="l">orphaned resources tolerated after teardown</div>
-        </div>
+    <div class="side">
+      <div class="shot">
+        <div class="cap"><span class="n">1</span> &nbsp;apply: resources created in workspace av1</div>
+        <div class="crop apply" role="img" aria-label="deploy.sh"></div>
+      </div>
+      <div class="shot">
+        <div class="cap"><span class="n">3</span> &nbsp;verifica.sh: 25 PASSA / 0 FALHA</div>
+        <div class="crop verifica" role="img" aria-label="verifica.sh"></div>
+      </div>
+      <div class="shot">
+        <div class="cap"><span class="n">4</span> &nbsp;destroy: 27 resources removed, 0 orphans</div>
+        <div class="crop destroy" role="img" aria-label="destroy.sh"></div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Decision 5 · infrastructure</span><span>g07 · EDA262 · Part 1</span></div>
+  <div class="foot"><span>Real run on 2026-10-04 (catalog 2026.10.04)</span><span>g07 · EDA262 · Part 1 · 7/8</span></div>
 </section>
 
-<!-- 10 --------------------------------------------------------------------->
+<!-- 8 · Bruno ----------------------------------------------------------------->
 <section class="slide">
   <h2>Every decision, one number</h2>
   <div class="body">
     <div class="col">
       <table>
         <tr><th>Decision</th><th style="text-align:right">The number behind it</th></tr>
-        <tr><td>Grain: one row per CVE</td><td class="n">1,713 / 1,713 · 0 duplicates</td></tr>
-        <tr><td>Per-product grain rejected</td><td class="n">214 ambiguous (12.5%)</td></tr>
-        <tr><td>Cleaning in the trusted layer</td><td class="n">18 → 0</td></tr>
-        <tr><td>Schema in IaC, no Crawler</td><td class="n">15 columns · USD 0.073 avoided</td></tr>
-        <tr class="lead"><td>Cost per query</td><td class="n">USD 0.00004768</td></tr>
-        <tr><td>Parquet deferred to Part 2</td><td class="n">USD 0.00 saving</td></tr>
-        <tr><td>Teardown without orphans</td><td class="n">5 resources checked</td></tr>
+        <tr><td>One row per CVE</td><td class="n">0 duplicates</td></tr>
+        <tr><td>Raw → trusted cleaning</td><td class="n">18 → 0 dirty rows</td></tr>
+        <tr><td>Schema in code, no Crawler</td><td class="n">USD 0.073 avoided per run</td></tr>
+        <tr class="lead"><td>No Parquet in Part 1</td><td class="n">USD 0.00 saved</td></tr>
+        <tr><td>Destroy verified on AWS</td><td class="n">0 orphaned resources</td></tr>
       </table>
     </div>
     <div class="col col-narrow">
-      <div class="kicker">Next phase</div>
-      <ul style="margin-top:0.1in">
-        <li>Volume that <b>clears the billing floor</b> — only then do Parquet and partitioning
-            have a measurable saving.</li>
-        <li><b>Idempotent</b> ingestion with partition backfill.</li>
-        <li>Refined layer and per-layer permissions via <b>Lake Formation</b>.</li>
+      <div class="kicker">From project to product</div>
+      <p style="font-size:13pt;line-height:1.5;margin-top:0.06in">
+        The foundation of a <b>patch-prioritization</b> service driven by real risk,
+        at <span class="num">USD 0.00004768</span> per query.
+      </p>
+      <div class="kicker" style="margin-top:0.32in">Part 2</div>
+      <ul style="margin-top:0.06in">
+        <li><b>EPSS</b>: exploitation probability for <span class="num">373k</span> CVEs, every day.</li>
+        <li>Partitioning measured: <span class="num">12.2×</span> less data read.</li>
       </ul>
-      <div style="margin-top:0.4in;border-top:2px solid #e8710a;padding-top:0.16in;font-size:11pt;color:#5f5f5f;line-height:1.5">
-        <b style="color:#1a1a1a">Repository:</b> eda262-projeto-g07<br>
-        <b style="color:#1a1a1a">Evidence:</b> docs/evidence/<br>
-        <b style="color:#1a1a1a">Decisions:</b> DECISIONS.md
+      <div style="margin-top:0.3in;border-top:2px solid #e8710a;padding-top:0.16in;font-size:11pt;color:#5f5f5f;line-height:1.5">
+        <b style="color:#1a1a1a">Repository:</b> github.com/brunoribeirol/eda262-projeto-g07<br>
+        <b style="color:#1a1a1a">All decisions:</b> DECISIONS.md
       </div>
     </div>
   </div>
-  <div class="foot"><span>Closing</span><span>g07 · EDA262 · Part 1</span></div>
+  <div class="foot"><span>Engineering decisions</span><span>g07 · EDA262 · Part 1 · 8/8</span></div>
 </section>
 
 </body>
