@@ -1,5 +1,9 @@
 # Project Context
 
+## Status
+Part 1 (AV1) submitted and presented on 2026-10-05; the delivered state is the signed tag
+`av1-entrega`. Next: Part 2 (AV2, due 2026-11-30), starting from the EPSS decision.
+
 ## Purpose
 EDA262 (CESAR School) group project, Part 1 / AV1: minimal AWS data engineering pipeline over public
 vulnerability data (CISA KEV feed), answering one business question in Athena with measured query cost.

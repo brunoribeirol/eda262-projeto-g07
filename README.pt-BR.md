@@ -10,6 +10,9 @@ ativamente exploradas nos últimos 12 meses — e quanto custa essa consulta no 
 
 **Resposta e custo medido:** `docs/evidence/` · **Decisões com números:** [`DECISOES.md`](DECISOES.md)
 
+> **Status:** Parte 1 (AV1) entregue e apresentada em 05/10/2026. O estado entregue é a tag
+> assinada [`av1-entrega`](https://github.com/brunoribeirol/eda262-projeto-g07/tree/av1-entrega); o `main` segue em direção à Parte 2.
+
 > **Sobre idioma.** Código, identificadores, comentários e documentação estão em inglês.
 > Cinco nomes permanecem em português porque o guia da disciplina os define como contrato com o
 > avaliador, e o script dele espera exatamente esses nomes: `parte-1/`, `parte-2/`,

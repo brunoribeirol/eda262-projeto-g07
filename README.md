@@ -11,6 +11,9 @@ over the last 12 months — and what does that query cost in Athena?
 **Answer and measured cost:** `docs/evidence/` · **Decisions with numbers:**
 [`DECISIONS.md`](DECISIONS.md) (English) / [`DECISOES.md`](DECISOES.md) (Portuguese, the graded copy)
 
+> **Status:** Part 1 (AV1) submitted and presented on 2026-10-05. The delivered state is the
+> signed tag [`av1-entrega`](https://github.com/brunoribeirol/eda262-projeto-g07/tree/av1-entrega); `main` moves on toward Part 2.
+
 > **A note on language.** Code, identifiers, comments and documentation are in English.
 > Five names stay in Portuguese because the course guide defines them as the evaluator-facing
 > contract, and the grader's own script expects them verbatim: `parte-1/`, `parte-2/`,

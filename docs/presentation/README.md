@@ -79,7 +79,13 @@ The page box is 13.333in × 7.5in (16:9), so each slide renders as exactly one P
 
 ---
 
-## Before presenting
+## Delivery record
+
+- **Presented and submitted:** 2026-10-05 (Part 1 / AV1).
+- **Delivered deck:** `apresentacao-parte-1-g07.pdf` at the signed tag `av1-entrega`.
+- The talk track (`speaker-notes.pt-BR.md`) is gitignored on purpose and lives only locally.
+
+## Before presenting (reuse for Part 2)
 
 - [ ] Render both decks with `scripts/build_pdf.sh` and confirm 8 pages each.
 - [ ] Confirm `docs/evidence/` still holds the official 2026-09-17 run (`git status` clean) — the
