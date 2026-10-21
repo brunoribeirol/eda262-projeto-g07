@@ -1,0 +1,32 @@
+{
+  "day": "2026-10-20",
+  "checked_at_utc": "2026-10-20T21:40:48Z",
+  "method": "partition overwrite: clear the partition prefix, then INSERT INTO",
+  "idempotent": true,
+  "trusted_epss_scores": {
+    "before": {
+      "rows": 391915,
+      "distinct_cve_id": 391915,
+      "s3_objects": 1
+    },
+    "after": {
+      "rows": 391915,
+      "distinct_cve_id": 391915,
+      "s3_objects": 1
+    },
+    "rows_if_append_only": 783830
+  },
+  "refined_vendor_exposure_daily": {
+    "before": {
+      "rows": 290,
+      "distinct_vendors": 290,
+      "s3_objects": 1
+    },
+    "after": {
+      "rows": 290,
+      "distinct_vendors": 290,
+      "s3_objects": 1
+    },
+    "rows_if_append_only": 580
+  }
+}

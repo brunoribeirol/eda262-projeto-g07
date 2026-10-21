@@ -1,0 +1,53 @@
+Verificacao EDA262 -- Parte 2 (AV2) -- grupo g07
+repositorio: /Users/brunoribeiro/Documents/Projects/academic/eda262-projeto-g07
+
+1. Estrutura do repositorio
+PASSA  Terraform da Parte 2 em parte-2/ na raiz do repositorio
+PASSA  DECISOES.md na raiz do repositorio
+PASSA  README.md com instrucoes de deploy/destroy
+PASSA  Script de aceitacao em verificacao/verifica.sh
+FALHA  Apresentacao apresentacao-parte-2-g07.pdf gerada
+
+2. Infraestrutura como codigo
+PASSA  Terraform empacotado em modulos (data-lake, governance)
+PASSA  Backend remoto declarado (S3 + DynamoDB)
+PASSA  Workspace do Terraform em uso
+PASSA  Schema declarado em IaC (colunas explicitas)
+PASSA  Nenhum recurso aws_glue_crawler no codigo
+PASSA  Tags obrigatorias declaradas (turma/grupo/projeto)
+PASSA  Tres camadas declaradas (raw / trusted / refined)
+PASSA  Formato Parquet com compressao declarado
+PASSA  Chaves de particao declaradas nas tabelas
+PASSA  Lake Formation declarado (settings, registro, grants)
+
+3. Decisoes e evidencias
+PASSA  DECISOES.md (Parte 2): grao, chaves, particao, formato e custo
+FALHA  DECISOES.md sem numeros pendentes de medicao
+PASSA  Meta de custo por consulta declarada e cumprida
+PASSA  Mesma resposta nas tres camadas (raw/trusted/refined)
+PASSA  Granularidade comprovada (0 chave duplicada)
+PASSA  Backfill registrado (>= 2 particoes EPSS carregadas)
+PASSA  Ingestao idempotente comprovada (recarga sem duplicar)
+PASSA  Matriz de acesso por camada comprovada (Lake Formation)
+PASSA  Resultado da consulta de negocio salvo
+
+4. Recursos provisionados na AWS
+PASSA  Bucket da camada raw (eda262-g07-lake-raw)
+PASSA  Bucket da camada trusted (eda262-g07-lake-trusted)
+PASSA  Bucket da camada refined (eda262-g07-lake-refined)
+PASSA  Bucket de resultados do Athena
+PASSA  Bancos no Glue por camada (raw/trusted/refined)
+PASSA  Todas as tabelas declaram a granularidade no catalogo
+PASSA  Tabelas trusted/refined em Parquet e particionadas
+PASSA  Nenhuma tabela ou Crawler criado por Glue Crawler
+PASSA  Athena WorkGroup do pipeline (eda262-g07-wg)
+PASSA  WorkGroups isolados por perfil de acesso
+PASSA  Particoes historicas carregadas no trusted (backfill)
+PASSA  Buckets das camadas registrados no Lake Formation
+PASSA  Lake Formation em vigor (sem IAMAllowedPrincipals padrao)
+PASSA  Grants por camada iguais a matriz declarada
+PASSA  Tags obrigatorias aplicadas nos buckets
+
+------------------------------------------------------------
+Resultado: 37 PASSA / 2 FALHA  (total: 39 criterios)
+2 criterio(s) nao atendido(s).

@@ -1,0 +1,28 @@
+{
+  "query": "top vendors by KEV CVEs added in the last 12 months, with their EPSS over the window",
+  "layer": "refined",
+  "window": {
+    "first_day": "2026-09-21",
+    "last_day": "2026-10-20",
+    "partitions": 30
+  },
+  "kev_catalog_date": "2026-10-20",
+  "region": "us-east-1",
+  "workgroup": "eda262-g07-wg",
+  "measured_at": "2026-10-20T21:38:11Z",
+  "execution_id": "2abef452-dbe9-4627-94b7-bb9c6ba3cf23",
+  "data_scanned_bytes": 162943,
+  "billed_bytes": 10485760,
+  "athena_min_billed_bytes": 10485760,
+  "engine_execution_ms": 1714,
+  "total_execution_ms": 2169,
+  "price_per_tb_usd": "5.00",
+  "cost_usd": "0.00004768",
+  "cost_target": {
+    "max_scanned_bytes": 10485760,
+    "met": true
+  },
+  "grain_check": {
+    "duplicate_rows": 0
+  }
+}

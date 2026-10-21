@@ -1,0 +1,20 @@
+{
+  "source": "cisa-kev",
+  "catalog_version": "2026.10.20",
+  "catalog_date": "2026-10-20",
+  "ingested_at_utc": "2026-10-20 21:26:53",
+  "source_entries": 1754,
+  "source_bytes": 1803455,
+  "raw_record_bytes": 1408182,
+  "untrimmed_source_rows": 19,
+  "trusted_rows": 1754,
+  "trusted_distinct_cve_id": 1754,
+  "grain": "one row per (cve_id, catalog_date)",
+  "trusted_insert": {
+    "execution_id": "4025dae6-fb6f-4b66-bc1f-882c678a182c",
+    "data_scanned_bytes": 1408182,
+    "engine_execution_ms": 2488,
+    "total_execution_ms": 2765,
+    "output_location": "s3://eda262-g07-athena-results/pipeline/4025dae6-fb6f-4b66-bc1f-882c678a182c"
+  }
+}

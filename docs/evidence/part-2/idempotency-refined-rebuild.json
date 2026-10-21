@@ -1,0 +1,33 @@
+{
+  "table": "refined.vendor_exposure_daily",
+  "grain": "one row per (vendor_project, snapshot_date)",
+  "range": {
+    "from": "2026-10-20",
+    "to": "2026-10-20"
+  },
+  "kev_catalog_date": "2026-10-20",
+  "built_at_utc": "2026-10-20 21:40:26",
+  "partitions": 1,
+  "rows": 290,
+  "inserts": [
+    {
+      "from": "2026-10-20",
+      "to": "2026-10-20",
+      "partitions": 1,
+      "execution_id": "7b50a81d-a766-4f3f-bcb2-e4937b45c272",
+      "data_scanned_bytes": 1951209,
+      "engine_execution_ms": 2118,
+      "total_execution_ms": 2360,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/7b50a81d-a766-4f3f-bcb2-e4937b45c272"
+    }
+  ],
+  "days": [
+    {
+      "snapshot_date": "2026-10-20",
+      "rows": 290,
+      "vendors": 290,
+      "kev_cves": 1754,
+      "epss_scored_cves": 1754
+    }
+  ]
+}

@@ -2,25 +2,30 @@
 #
 # Renders the slide decks to PDF via headless Chrome.
 #
-# The Portuguese deck becomes apresentacao-parte-1-g07.pdf at the repository root --
+# The Portuguese deck becomes apresentacao-parte-N-g07.pdf at the repository root --
 # that exact filename is the one the course guide requires for delivery.
+# Part 2 is the default since AV2; --part 1 re-renders the delivered AV1 decks.
 #
-# Usage: scripts/build_pdf.sh [--en-only|--pt-only]
+# Usage: scripts/build_pdf.sh [--part 1|2] [--en-only|--pt-only]
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 DECK_DIR="${REPO_ROOT}/docs/presentation"
 BUILD_PT=1
 BUILD_EN=1
+PART=2
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --part)    PART="${2:?--part needs 1 or 2}"; shift 2 ;;
     --pt-only) BUILD_EN=0; shift ;;
     --en-only) BUILD_PT=0; shift ;;
-    -h|--help) sed -n '2,8p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help) sed -n '2,9p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
+
+[[ "${PART}" == "1" || "${PART}" == "2" ]] || die "--part must be 1 or 2"
 
 # Chrome ships under different paths depending on the machine; take the first that exists.
 CHROME=""
@@ -108,15 +113,15 @@ render() {
 }
 
 if [[ "${BUILD_PT}" -eq 1 ]]; then
-  render "${DECK_DIR}/apresentacao-parte-1-g07.html" \
-         "${REPO_ROOT}/apresentacao-parte-1-g07.pdf" \
-         "Portuguese deck (delivered)"
+  render "${DECK_DIR}/apresentacao-parte-${PART}-g07.html" \
+         "${REPO_ROOT}/apresentacao-parte-${PART}-g07.pdf" \
+         "Portuguese deck, Part ${PART} (the graded file)"
 fi
 
 if [[ "${BUILD_EN}" -eq 1 ]]; then
-  render "${DECK_DIR}/presentation-part-1-g07.html" \
-         "${REPO_ROOT}/presentation-part-1-g07.pdf" \
-         "English deck"
+  render "${DECK_DIR}/presentation-part-${PART}-g07.html" \
+         "${REPO_ROOT}/presentation-part-${PART}-g07.pdf" \
+         "English deck, Part ${PART}"
 fi
 
 echo

@@ -6,8 +6,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-TF_DIR="${REPO_ROOT}/parte-1"
-EVIDENCE_DIR="${REPO_ROOT}/docs/evidence"
+# Part 1 defaults; scripts/part-2/lib.sh sets both before sourcing this file.
+TF_DIR="${TF_DIR:-${REPO_ROOT}/parte-1}"
+EVIDENCE_DIR="${EVIDENCE_DIR:-${REPO_ROOT}/docs/evidence}"
 
 # Colors only when attached to a terminal, so redirected logs stay clean.
 if [[ -t 1 ]]; then
@@ -44,5 +45,5 @@ aws_cli() {
   local args=()
   [[ -n "${AWS_PROFILE_OVERRIDE:-}" ]] && args+=(--profile "${AWS_PROFILE_OVERRIDE}")
   [[ -n "${AWS_REGION_OVERRIDE:-}" ]] && args+=(--region "${AWS_REGION_OVERRIDE}")
-  aws "${args[@]}" "$@"
+  aws ${args[@]+"${args[@]}"} "$@"
 }
