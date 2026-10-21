@@ -1,0 +1,5 @@
+{"ingested_at_utc":"2026-10-20 21:26:53","source":"cisa-kev","mode":"snapshot","from":"2026-10-20","to":"2026-10-20","partitions":1,"source_rows":1754,"trusted_rows":1754,"insert_scanned_bytes":1408182,"inserts":1}
+{"ingested_at_utc":"2026-10-20 21:33:03","source":"first-epss","mode":"backfill","from":"2026-09-21","to":"2026-10-20","partitions":30,"source_rows":11519635,"trusted_rows":11519635,"insert_scanned_bytes":80917274,"inserts":1}
+{"ingested_at_utc":"2026-10-20 21:35:23","source":"refined.vendor_exposure_daily","mode":"build","from":"2026-09-21","to":"2026-10-20","partitions":30,"rows":8569,"kev_catalog_date":"2026-10-20","insert_scanned_bytes":56922386,"inserts":1}
+{"ingested_at_utc":"2026-10-20 21:39:51","source":"first-epss","mode":"explicit","from":"2026-10-20","to":"2026-10-20","partitions":1,"source_rows":391915,"trusted_rows":391915,"insert_scanned_bytes":2748018,"inserts":1}
+{"ingested_at_utc":"2026-10-20 21:40:26","source":"refined.vendor_exposure_daily","mode":"build","from":"2026-10-20","to":"2026-10-20","partitions":1,"rows":290,"kev_catalog_date":"2026-10-20","insert_scanned_bytes":1951209,"inserts":1}

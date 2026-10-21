@@ -1,0 +1,44 @@
+{
+  "source": "first-epss",
+  "mode": "explicit",
+  "range": {
+    "from": "2026-10-20",
+    "to": "2026-10-20"
+  },
+  "partitions": 1,
+  "ingested_at_utc": "2026-10-20 21:39:51",
+  "totals": {
+    "source_rows": 391915,
+    "source_gzip_bytes": 2748018,
+    "trusted_rows": 391915,
+    "insert_scanned_bytes": 2748018
+  },
+  "grain": "one row per (cve_id, snapshot_date)",
+  "days": [
+    {
+      "snapshot_date": "2026-10-20",
+      "source_rows": 391915,
+      "source_gzip_bytes": 2748018,
+      "model_version": "v2026.06.15"
+    }
+  ],
+  "trusted": [
+    {
+      "snapshot_date": "2026-10-20",
+      "rows": 391915,
+      "distinct_cve_id": 391915
+    }
+  ],
+  "trusted_inserts": [
+    {
+      "from": "2026-10-20",
+      "to": "2026-10-20",
+      "partitions": 1,
+      "execution_id": "5922e3b1-7003-4805-9039-d1a99c8532fb",
+      "data_scanned_bytes": 2748018,
+      "engine_execution_ms": 3144,
+      "total_execution_ms": 3440,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/5922e3b1-7003-4805-9039-d1a99c8532fb"
+    }
+  ]
+}

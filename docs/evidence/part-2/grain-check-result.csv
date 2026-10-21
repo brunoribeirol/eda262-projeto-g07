@@ -1,0 +1,4 @@
+"table_name","grain","total_rows","distinct_keys","duplicate_rows"
+"refined.vendor_exposure_daily","vendor_project, snapshot_date","8569","8569","0"
+"trusted.epss_scores","cve_id, snapshot_date","11519635","11519635","0"
+"trusted.kev_vulnerabilities","cve_id, catalog_date","1754","1754","0"

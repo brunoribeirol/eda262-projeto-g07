@@ -1,0 +1,96 @@
+{
+  "checked_at_utc": "2026-10-20T21:46:25Z",
+  "enforced_by": "AWS Lake Formation (identical IAM policy for every persona)",
+  "probes": {
+    "raw": "kev_records@2026-10-20",
+    "trusted": "kev_vulnerabilities@2026-10-20",
+    "refined": "vendor_exposure_daily@2026-10-20"
+  },
+  "checks": 9,
+  "matches": 9,
+  "all_match": true,
+  "layers_without_a_successful_probe": [],
+  "results": [
+    {
+      "persona": "business-user",
+      "layer": "raw",
+      "expected": "denied",
+      "actual": "denied",
+      "match": true,
+      "execution_id": "baedc1a1-c04e-47f0-9956-d1710cdb6c51",
+      "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_raw  "
+    },
+    {
+      "persona": "business-user",
+      "layer": "trusted",
+      "expected": "denied",
+      "actual": "denied",
+      "match": true,
+      "execution_id": "95ec5d98-482c-445d-a09f-ebadd23a2f31",
+      "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_trusted  "
+    },
+    {
+      "persona": "business-user",
+      "layer": "refined",
+      "expected": "granted",
+      "actual": "granted",
+      "match": true,
+      "execution_id": "efd5020c-ce77-46f6-a03c-3d37b52cf374",
+      "reason": ""
+    },
+    {
+      "persona": "data-analyst",
+      "layer": "raw",
+      "expected": "denied",
+      "actual": "denied",
+      "match": true,
+      "execution_id": "cf27ef4e-0215-4812-8ade-c1522ba46fbf",
+      "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_raw  "
+    },
+    {
+      "persona": "data-analyst",
+      "layer": "trusted",
+      "expected": "granted",
+      "actual": "granted",
+      "match": true,
+      "execution_id": "31ae013a-e54f-4402-aaa0-2fe4181fdd78",
+      "reason": ""
+    },
+    {
+      "persona": "data-analyst",
+      "layer": "refined",
+      "expected": "granted",
+      "actual": "granted",
+      "match": true,
+      "execution_id": "4c5d9e66-ccda-4fda-b0bf-3a940d11c989",
+      "reason": ""
+    },
+    {
+      "persona": "data-engineer",
+      "layer": "raw",
+      "expected": "granted",
+      "actual": "granted",
+      "match": true,
+      "execution_id": "759d88fa-6567-4ae1-98dc-067b5a755020",
+      "reason": ""
+    },
+    {
+      "persona": "data-engineer",
+      "layer": "trusted",
+      "expected": "granted",
+      "actual": "granted",
+      "match": true,
+      "execution_id": "f0b224e5-f8cb-4734-8f9f-22a06e6fe6a2",
+      "reason": ""
+    },
+    {
+      "persona": "data-engineer",
+      "layer": "refined",
+      "expected": "granted",
+      "actual": "granted",
+      "match": true,
+      "execution_id": "db322469-6026-423d-9608-5fe4b8fedbc3",
+      "reason": ""
+    }
+  ]
+}

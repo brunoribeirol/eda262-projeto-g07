@@ -1,0 +1,62 @@
+{
+  "window": {
+    "first_day": "2026-09-21",
+    "last_day": "2026-10-20"
+  },
+  "results_identical_across_layers": true,
+  "business_question": {
+    "raw": {
+      "execution_id": "10907220-5ccb-49ce-8d79-ffba05cb4e06",
+      "data_scanned_bytes": 82325456,
+      "engine_execution_ms": 4554,
+      "total_execution_ms": 4770,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/10907220-5ccb-49ce-8d79-ffba05cb4e06.csv",
+      "billed_bytes": 82325456,
+      "cost_usd": "0.00037437"
+    },
+    "trusted": {
+      "execution_id": "7f0da0fb-9797-4e85-9183-d526eaac3a4d",
+      "data_scanned_bytes": 56913236,
+      "engine_execution_ms": 4824,
+      "total_execution_ms": 4992,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/7f0da0fb-9797-4e85-9183-d526eaac3a4d.csv",
+      "billed_bytes": 56913236,
+      "cost_usd": "0.00025881"
+    },
+    "refined": {
+      "execution_id": "2abef452-dbe9-4627-94b7-bb9c6ba3cf23",
+      "data_scanned_bytes": 162943,
+      "engine_execution_ms": 1714,
+      "total_execution_ms": 2169,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/2abef452-dbe9-4627-94b7-bb9c6ba3cf23.csv",
+      "billed_bytes": 10485760,
+      "cost_usd": "0.00004768"
+    }
+  },
+  "scanned_bytes_ratio": {
+    "raw_over_refined": 505.2408265467065,
+    "raw_over_trusted": 1.4465080846922849,
+    "trusted_over_refined": 349.2830989978091
+  },
+  "partition_pruning": {
+    "one_day": {
+      "execution_id": "bcc13552-5299-457f-a5d3-13b5108332b2",
+      "data_scanned_bytes": 779638,
+      "engine_execution_ms": 919,
+      "total_execution_ms": 1100,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/bcc13552-5299-457f-a5d3-13b5108332b2.csv",
+      "billed_bytes": 10485760,
+      "cost_usd": "0.00004768"
+    },
+    "whole_window": {
+      "execution_id": "1c9da5fb-7e53-4c06-8cc1-76c6f343e62c",
+      "data_scanned_bytes": 22606275,
+      "engine_execution_ms": 1574,
+      "total_execution_ms": 1786,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/1c9da5fb-7e53-4c06-8cc1-76c6f343e62c.csv",
+      "billed_bytes": 22606275,
+      "cost_usd": "0.00010280"
+    },
+    "whole_window_over_one_day": 28.995860899545686
+  }
+}
