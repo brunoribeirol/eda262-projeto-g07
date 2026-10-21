@@ -311,8 +311,13 @@ dado não reproduzível, esta decisão seria o oposto da correta.
 **Fontes:** CISA KEV (dimensão, catálogo de CVEs exploradas) + FIRST EPSS (fato, um
 snapshot diário com a probabilidade de exploração de cada CVE).
 **Pergunta de negócio:** quais fabricantes concentram as vulnerabilidades ativamente
-exploradas (KEV) dos últimos 12 meses, qual a probabilidade de exploração (EPSS) dessas
-vulnerabilidades ao longo de uma janela de 30 dias — e quanto custa responder isso no Athena?
+exploradas (KEV) dos últimos 12 meses, qual a probabilidade de exploração (EPSS) do portfólio de
+vulnerabilidades exploradas de cada um ao longo de uma janela de 30 dias — e quanto custa
+responder isso no Athena?
+**Escopo de cada medida:** o ranking conta as CVEs exploradas *adicionadas* nos últimos 12 meses
+(atividade recente); o EPSS médio cobre *todas* as CVEs exploradas do fabricante já listadas no dia
+(exposição atual), porque uma CVE explorada antiga continua sendo risco enquanto houver sistema sem
+correção.
 **Janela de referência das medições na fonte:** EPSS de 2026-09-21 a 2026-10-20 (30 dias);
 KEV `catalogVersion` 2026.10.16 (1.748 entradas) e o catálogo publicado em seguida (1.754).
 O KEV muda ao longo da semana, e cada carga registra a versão que usou (`kev_catalog_date`).

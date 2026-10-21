@@ -7,8 +7,9 @@ Data lake na AWS, provisionado 100% em Terraform, sobre dois feeds públicos de 
 cada CVE ser explorada).
 
 **Pergunta de negócio (Parte 2):** quais fabricantes concentram as vulnerabilidades ativamente
-exploradas dos últimos 12 meses, qual a probabilidade de exploração dessas vulnerabilidades ao
-longo de uma janela de 30 dias — e quanto custa responder isso no Athena?
+exploradas dos últimos 12 meses, qual a probabilidade de exploração do portfólio de
+vulnerabilidades exploradas de cada um ao longo de uma janela de 30 dias — e quanto custa
+responder isso no Athena?
 
 **Decisões com números:** [`DECISOES.md`](DECISOES.md) (cópia avaliada) /
 [`DECISIONS.md`](DECISIONS.md) (inglês) · **Evidências:** `docs/evidence/part-2/`
@@ -213,6 +214,7 @@ scripts/part-2/
 verificacao/                verifica.sh (entrada) + critérios part-1.sh / part-2.sh
 DECISOES.md / DECISIONS.md  decisões de engenharia com números medidos (PT avaliada / EN)
 docs/evidence/part-2/       evidências produzidas por uma execução real
+docs/presentation/          decks (PT avaliado + EN) das duas partes; scripts/build_pdf.sh gera os PDFs
 parte-1/, scripts/*.sh      Parte 1 (AV1), como entregue -- ver abaixo
 ```
 

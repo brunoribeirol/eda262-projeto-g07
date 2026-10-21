@@ -1,8 +1,12 @@
 -- EDA262 g07 | Part 2 business question -- refined layer (the graded, cost-targeted query)
 --
 -- Which vendors concentrate the actively exploited vulnerabilities (CISA KEV) of the last
--- 12 months, and how likely those vulnerabilities are to be exploited (FIRST EPSS) over a
--- window of daily snapshots.
+-- 12 months, and how likely each vendor's portfolio of exploited vulnerabilities is to be
+-- exploited (FIRST EPSS) over a window of daily snapshots.
+--
+-- Scope: kev_cves_last_12m counts CVEs ADDED to KEV in the 12 months up to the last day
+-- (recent activity); the EPSS columns, ransomware_linked and cves_epss_ge_10pct cover ALL of
+-- the vendor's KEV CVEs already listed that day (current exposure).
 --
 -- Execution parameters, in order (Athena prompts for them in the console). This file uses
 -- the question-mark placeholder ONLY for parameters, never in comments:

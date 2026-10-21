@@ -310,8 +310,11 @@ environment with non-reproducible data, this decision would be the opposite of c
 **Sources:** CISA KEV (dimension: the catalog of exploited CVEs) + FIRST EPSS (fact: one daily
 snapshot with every CVE's probability of exploitation).
 **Business question:** which vendors concentrate the actively exploited vulnerabilities (KEV) of
-the last 12 months, how likely are those vulnerabilities to be exploited (EPSS) over a 30-day
-window — and what does answering that cost in Athena?
+the last 12 months, how likely is each vendor's portfolio of exploited vulnerabilities to be
+exploited (EPSS) over a 30-day window — and what does answering that cost in Athena?
+**Scope of each measure:** the ranking counts exploited CVEs *added* in the last 12 months (recent
+activity); the mean EPSS covers *all* of the vendor's exploited CVEs already listed that day
+(current exposure), because an old exploited CVE stays a risk while unpatched systems exist.
 **Reference window for source measurements:** EPSS 2026-09-21 to 2026-10-20 (30 days); KEV
 `catalogVersion` 2026.10.16 (1,748 entries) and the next published catalog (1,754). KEV changes
 during the week; every load records the version it used (`kev_catalog_date`).

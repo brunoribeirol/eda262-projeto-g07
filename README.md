@@ -7,8 +7,8 @@ An AWS data lake, provisioned 100% in Terraform, over two public security feeds:
 that each CVE will be exploited).
 
 **Business question (Part 2):** which vendors concentrate the actively exploited
-vulnerabilities of the last 12 months, how likely are those vulnerabilities to be exploited over
-a 30-day window — and what does answering that cost in Athena?
+vulnerabilities of the last 12 months, how likely is each vendor's portfolio of exploited
+vulnerabilities to be exploited over a 30-day window — and what does answering that cost in Athena?
 
 **Decisions with numbers:** [`DECISIONS.md`](DECISIONS.md) (English) /
 [`DECISOES.md`](DECISOES.md) (Portuguese, the graded copy) · **Evidence:** `docs/evidence/part-2/`
@@ -211,6 +211,7 @@ scripts/part-2/
 verificacao/                verifica.sh (entry point) + part-1.sh / part-2.sh criteria
 DECISOES.md / DECISIONS.md  engineering decisions with measured numbers (PT graded / EN)
 docs/evidence/part-2/       evidence produced by a real run
+docs/presentation/          slide decks (PT graded + EN) for both parts; scripts/build_pdf.sh renders them
 parte-1/, scripts/*.sh      Part 1 (AV1), as delivered -- see below
 ```
 
