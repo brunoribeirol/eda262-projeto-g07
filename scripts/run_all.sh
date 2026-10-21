@@ -54,24 +54,24 @@ announce "Remote backend"
 if [[ -f "${TF_DIR}/backend.hcl" ]]; then
   ok "backend.hcl already present, skipping bootstrap"
 else
-  "${SCRIPT_DIR}/bootstrap.sh" "${PROFILE_ARGS[@]}" --region "${REGION}"
+  "${SCRIPT_DIR}/bootstrap.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"} --region "${REGION}"
 fi
 
 announce "Provisioning the data lake"
-"${SCRIPT_DIR}/deploy.sh" "${PROFILE_ARGS[@]}" --region "${REGION}"
+"${SCRIPT_DIR}/deploy.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"} --region "${REGION}"
 
 announce "Ingesting the CISA KEV catalog"
-"${SCRIPT_DIR}/ingest.sh" "${PROFILE_ARGS[@]}"
+"${SCRIPT_DIR}/ingest.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"}
 
 announce "Running the business question and measuring cost"
-"${SCRIPT_DIR}/run_query.sh" "${PROFILE_ARGS[@]}"
+"${SCRIPT_DIR}/run_query.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"}
 
 announce "Rendering the slide decks to PDF"
 "${SCRIPT_DIR}/build_pdf.sh" || warn "PDF rendering failed -- print the decks manually, see docs/presentation/README.md"
 
 announce "Verifying every rubric criterion"
 set +e
-"${REPO_ROOT}/verificacao/verifica.sh" "${PROFILE_ARGS[@]}"
+"${REPO_ROOT}/verificacao/verifica.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"}
 verify_status=$?
 set -e
 
@@ -84,7 +84,7 @@ fi
 
 if [[ "${DESTROY_AFTER}" -eq 1 ]]; then
   announce "Tearing down"
-  "${SCRIPT_DIR}/destroy.sh" "${PROFILE_ARGS[@]}" --region "${REGION}"
+  "${SCRIPT_DIR}/destroy.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"} --region "${REGION}"
 fi
 
 cat <<NEXT

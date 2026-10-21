@@ -44,5 +44,5 @@ aws_cli() {
   local args=()
   [[ -n "${AWS_PROFILE_OVERRIDE:-}" ]] && args+=(--profile "${AWS_PROFILE_OVERRIDE}")
   [[ -n "${AWS_REGION_OVERRIDE:-}" ]] && args+=(--region "${AWS_REGION_OVERRIDE}")
-  aws "${args[@]}" "$@"
+  aws ${args[@]+"${args[@]}"} "$@"
 }
