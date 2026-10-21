@@ -1,0 +1,24 @@
+# Copy to terraform.tfvars and adjust. All values below are the defaults.
+
+aws_region  = "us-east-1"
+aws_profile = "" # optional named profile; empty uses the default AWS credential chain
+
+# The course guide fixes this; change only if the group number changes.
+name_prefix = "eda262-g07"
+
+# Workspace whose resource names match the guide verbatim.
+delivery_workspace = "av2"
+
+# Athena guardrails (bytes). Pipeline: fits a 30-day raw batch (~81 MB) with headroom.
+pipeline_bytes_scanned_cutoff = 209715200 # 200 MB
+persona_bytes_scanned_cutoff  = 104857600 # 100 MB
+
+# Declared cost target of the business question: one Athena billing unit.
+cost_target_bytes_per_query = 10485760 # 10 MB
+
+# Access policy: which layers each persona may read (enforced by Lake Formation).
+# personas = {
+#   data-engineer = { description = "...", layers = ["raw", "trusted", "refined"] }
+#   data-analyst  = { description = "...", layers = ["trusted", "refined"] }
+#   business-user = { description = "...", layers = ["refined"] }
+# }
