@@ -71,7 +71,7 @@ announce "Rendering the slide decks to PDF"
 
 announce "Verifying every rubric criterion"
 set +e
-"${REPO_ROOT}/verificacao/verifica.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"}
+"${REPO_ROOT}/verificacao/verifica.sh" --parte 1 ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"}
 verify_status=$?
 set -e
 
