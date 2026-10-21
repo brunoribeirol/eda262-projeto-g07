@@ -67,7 +67,7 @@ announce "Running the business question and measuring cost"
 "${SCRIPT_DIR}/run_query.sh" ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"}
 
 announce "Rendering the slide decks to PDF"
-"${SCRIPT_DIR}/build_pdf.sh" || warn "PDF rendering failed -- print the decks manually, see docs/presentation/README.md"
+"${SCRIPT_DIR}/build_pdf.sh" --part 1 || warn "PDF rendering failed -- print the decks manually, see docs/presentation/README.md"
 
 announce "Verifying every rubric criterion"
 set +e
