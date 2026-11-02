@@ -33,8 +33,13 @@ variable "pipeline_bytes_scanned_cutoff" {
   }
 }
 
-variable "cost_target_bytes_per_query" {
-  description = "Declared cost target for the business question, in bytes scanned per execution. Exposed as an output for the cost check."
+variable "cost_target_bytes_per_window_day" {
+  description = "Declared cost target for the business question, in bytes scanned per daily partition of the window. Tagged on the pipeline WorkGroup so verifica.sh reads it from the account."
+  type        = number
+}
+
+variable "min_epss_sample_size" {
+  description = "Minimum EPSS-scored CVEs per vendor and day for the business question to report an average EPSS. Rendered into the analytics SQL."
   type        = number
 }
 

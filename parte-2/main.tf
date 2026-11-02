@@ -64,8 +64,9 @@ module "data_lake" {
   name_prefix = var.name_prefix
   name_suffix = local.name_suffix
 
-  pipeline_bytes_scanned_cutoff = var.pipeline_bytes_scanned_cutoff
-  cost_target_bytes_per_query   = var.cost_target_bytes_per_query
+  pipeline_bytes_scanned_cutoff    = var.pipeline_bytes_scanned_cutoff
+  cost_target_bytes_per_window_day = var.cost_target_bytes_per_window_day
+  min_epss_sample_size             = var.min_epss_sample_size
 
   # Databases must be created AFTER the defaults are cleared; otherwise they are
   # born with the IAMAllowedPrincipals grant and Lake Formation is bypassed.

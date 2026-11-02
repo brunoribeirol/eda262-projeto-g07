@@ -48,9 +48,9 @@ output "pipeline_bytes_scanned_cutoff" {
   value       = var.pipeline_bytes_scanned_cutoff
 }
 
-output "cost_target_bytes_per_query" {
-  description = "Declared cost target for the business question, in bytes scanned per execution."
-  value       = var.cost_target_bytes_per_query
+output "cost_target_bytes_per_window_day" {
+  description = "Declared cost target for the business question, in bytes scanned per daily partition of the window."
+  value       = var.cost_target_bytes_per_window_day
 }
 
 output "named_query_ids" {

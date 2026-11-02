@@ -68,9 +68,9 @@ output "pipeline_workgroup" {
   value       = module.data_lake.pipeline_workgroup
 }
 
-output "cost_target_bytes_per_query" {
-  description = "Declared cost target for the business question, in bytes scanned per execution."
-  value       = module.data_lake.cost_target_bytes_per_query
+output "cost_target_bytes_per_window_day" {
+  description = "Declared cost target for the business question, in bytes scanned per daily partition of the window."
+  value       = module.data_lake.cost_target_bytes_per_window_day
 }
 
 output "named_query_ids" {

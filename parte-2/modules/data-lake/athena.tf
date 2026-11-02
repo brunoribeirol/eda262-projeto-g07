@@ -8,14 +8,16 @@ locals {
   analytics_sql_dir = "${path.module}/../../sql/analytics"
 
   sql_template_vars = {
-    raw_db     = local.database_names.raw
-    trusted_db = local.database_names.trusted
-    refined_db = local.database_names.refined
+    raw_db          = local.database_names.raw
+    trusted_db      = local.database_names.trusted
+    refined_db      = local.database_names.refined
+    min_epss_sample = var.min_epss_sample_size
   }
 
   # The SQL lives in parte-2/sql/analytics/*.sql -- one file per query, rendered here
-  # with the database names only. Window dates are Athena execution parameters, so the
-  # exact text below is what scripts/part-2/run_query.sh fetches and executes.
+  # with the database names and the minimum EPSS sample size. Window dates are Athena
+  # execution parameters, so the exact text below is what scripts/part-2/run_query.sh
+  # and verificacao/verifica.sh fetch and execute.
   analytics_queries = {
     business-question = {
       file        = "business_question.sql"
@@ -42,6 +44,11 @@ locals {
       layer       = "trusted"
       description = "Proves the declared grain of every trusted/refined table: duplicate_rows must be 0."
     }
+    epss-sample-stability = {
+      file        = "epss_sample_stability.sql"
+      layer       = "refined"
+      description = "How much a vendor's average EPSS moves over the window, by sample size. Backs min_epss_sample_size. Params: first day, last day."
+    }
   }
 }
 
@@ -52,6 +59,12 @@ resource "aws_athena_workgroup" "pipeline" {
 
   # Deletes the named queries of this WorkGroup on destroy ("no orphaned resources").
   force_destroy = true
+
+  # The declared cost target travels with the deployed WorkGroup, so verifica.sh measures
+  # against what is in the account, not against a file in the repository.
+  tags = {
+    cost_target_bytes_per_window_day = tostring(var.cost_target_bytes_per_window_day)
+  }
 
   configuration {
     enforce_workgroup_configuration    = true

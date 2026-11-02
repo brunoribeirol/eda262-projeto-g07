@@ -76,19 +76,39 @@ variable "persona_bytes_scanned_cutoff" {
   }
 }
 
-variable "cost_target_bytes_per_query" {
+variable "cost_target_bytes_per_window_day" {
   description = <<-EOT
-    Declared cost target for the business question: at most this many bytes scanned per
-    execution. 10 MB is one Athena billing unit -- the cheapest a query can ever be
-    (USD 0.00004768 at us-east-1 pricing). scripts/part-2/run_query.sh measures the real
-    DataScannedInBytes against this value and fails if the target is missed.
+    Declared cost target for the business question, in bytes scanned per daily partition of
+    the window it is asked over: an execution over N days may scan at most N times this value.
+    It is stated in bytes, not dollars, because every query under 10 MB is billed the same
+    10 MB minimum -- a dollar target could never tell a good layout from a bad one. Scaling
+    with the window keeps it meaningful for any window, and a query that stops pruning
+    partitions misses it as soon as the history outgrows the window. scripts/part-2/run_query.sh
+    and verificacao/verifica.sh measure the real DataScannedInBytes against it.
   EOT
   type        = number
-  default     = 10485760 # 10 MB
+  default     = 16384 # 16 KiB per day of window
 
   validation {
-    condition     = var.cost_target_bytes_per_query > 0
+    condition     = var.cost_target_bytes_per_window_day > 0
     error_message = "The cost target must be a positive number of bytes."
+  }
+}
+
+variable "min_epss_sample_size" {
+  description = <<-EOT
+    Minimum number of EPSS-scored CVEs a vendor must have on every day of the window for the
+    business question to report its average EPSS. Below it the average is left NULL (the
+    sample size is always shown): on the 2026-09-21..2026-10-20 window, vendor averages over
+    5-9 CVEs moved by up to 0.58 in 30 days, averages over 10 or more by at most 0.08.
+    sql/analytics/epss_sample_stability.sql re-measures this on every run.
+  EOT
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.min_epss_sample_size >= 1 && floor(var.min_epss_sample_size) == var.min_epss_sample_size
+    error_message = "The minimum sample size must be a positive integer."
   }
 }
 
