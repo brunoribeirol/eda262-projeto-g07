@@ -11,12 +11,16 @@
 # default since AV2; --parte 1 re-checks the AV1 delivery exactly as it was graded.
 #
 # Usage:
-#   verificacao/verifica.sh                  # Part 2: repository + AWS resources
+#   verificacao/verifica.sh                  # Part 2: repository + measured in the AWS account
 #   verificacao/verifica.sh --repo-only      # static criteria only, no AWS
 #   verificacao/verifica.sh --parte 1        # Part 1 (AV1) criteria
 #   verificacao/verifica.sh --profile NAME   # specific AWS profile
+#   verificacao/verifica.sh --region NAME    # region of the lake (default: the aws_region
+#                                            # declared in parte-N/variables.tf, never the
+#                                            # runner's default region)
 #
-# Requires: bash, grep, jq. AWS criteria additionally require an authenticated AWS CLI.
+# Requires: bash, grep, jq. AWS criteria additionally require an authenticated AWS CLI; the
+# Part 2 ones run about a dozen small Athena queries (well under one US cent in total).
 
 set -uo pipefail
 
@@ -26,19 +30,30 @@ cd "${REPO_ROOT}"
 PARTE=2
 REPO_ONLY=0
 PROFILE=""
+REGION=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --parte)     PARTE="${2:?--parte requires 1 or 2}"; shift 2 ;;
     --repo-only) REPO_ONLY=1; shift ;;
     --profile)   PROFILE="${2:?--profile requires a value}"; shift 2 ;;
-    -h|--help)   sed -n '2,19p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    --region)    REGION="${2:?--region requires a value}"; shift 2 ;;
+    -h|--help)   sed -n '2,23p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
 
 # shellcheck source=lib.sh
 source "${REPO_ROOT}/verificacao/lib.sh"
+
+[[ "${PARTE}" == "1" || "${PARTE}" == "2" ]] || { echo "--parte must be 1 or 2" >&2; exit 2; }
+
+REGION_SOURCE="--region"
+if [[ -z "${REGION}" ]]; then
+  REGION="$(declared_region "${REPO_ROOT}/parte-${PARTE}/variables.tf")"
+  REGION_SOURCE="declarada em parte-${PARTE}/variables.tf"
+fi
+[[ -n "${REGION}" ]] || { echo "no region: pass --region (none declared in parte-${PARTE}/variables.tf)" >&2; exit 2; }
 
 case "${PARTE}" in
   1) source "${REPO_ROOT}/verificacao/part-1.sh"; run_part_1 ;;
