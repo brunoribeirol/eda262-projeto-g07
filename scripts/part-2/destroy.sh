@@ -4,6 +4,9 @@
 # VERIFIES that nothing was orphaned -- the rubric grades the destroy, so it is checked
 # against AWS instead of trusting Terraform's exit code.
 #
+# Evidence: docs/evidence/part-2/destroy-check.json, stamped with the run_id of the lake it
+# removes (read from run-manifest.json), so the teardown closes the same run as the rest.
+#
 # Usage: scripts/part-2/destroy.sh [--profile NAME] [--region REGION] [--workspace NAME]
 #                                  [--include-backend] [--keep-lakeformation-settings]
 
@@ -22,7 +25,7 @@ while [[ $# -gt 0 ]]; do
     --workspace)                   WORKSPACE="${2:?--workspace needs a value}"; shift 2 ;;
     --include-backend)             INCLUDE_BACKEND=1; shift ;;
     --keep-lakeformation-settings) RESTORE_LF=0; shift ;;
-    -h|--help)                     sed -n '2,8p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help)                     sed -n '2,11p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -46,7 +49,11 @@ LOCATIONS="$(tf_output_json registered_locations | jq -r 'join(" ")')"
 log "Destroying the parte-2 stack (workspace ${WORKSPACE})"
 TF_VARS=(-var "aws_region=${REGION}")
 [[ -z "${PROFILE}" ]] || TF_VARS+=(-var "aws_profile=${PROFILE}")
-terraform -chdir="${TF_DIR}" destroy -input=false -auto-approve "${TF_VARS[@]}"
+DESTROY_LOG="$(mktemp)"
+terraform -chdir="${TF_DIR}" destroy -input=false -auto-approve "${TF_VARS[@]}" | tee "${DESTROY_LOG}"
+# "Destroy complete! Resources: 74 destroyed." -- the count Terraform itself reports.
+RESOURCES_DESTROYED="$(sed -n 's/.*Destroy complete! Resources: \([0-9][0-9]*\) destroyed.*/\1/p' "${DESTROY_LOG}" | tail -n 1)"
+rm -f "${DESTROY_LOG}"
 
 # --- Lake Formation settings ---------------------------------------------------------
 # Destroying aws_lakeformation_data_lake_settings CLEARS the account settings (no admins,
@@ -97,6 +104,23 @@ for location in ${LOCATIONS}; do
   CHECKED=$(( CHECKED + 1 ))
   if grep -qF "${location}" <<< "${REGISTERED}"; then warn "Lake Formation registration still exists: ${location}"; ORPHANS=1; fi
 done
+
+# The lake's run, when this teardown removes a lake built by run_all.sh; otherwise our own.
+LAKE_RUN_ID="$(jq -r '.run_id // empty' "${RUN_MANIFEST}" 2>/dev/null || true)"
+mkdir -p "${EVIDENCE_DIR}"
+jq -n --arg run_id "${LAKE_RUN_ID:-${RUN_ID}}" --arg destroyed_at "$(now_utc_iso)" --arg region "${REGION}" \
+  --arg workspace "${WORKSPACE}" --arg destroyed "${RESOURCES_DESTROYED}" \
+  --argjson checked "${CHECKED}" --argjson orphans "${ORPHANS}" \
+  '{
+     run_id: $run_id,
+     destroyed_at_utc: $destroyed_at,
+     region: $region,
+     workspace: $workspace,
+     terraform_resources_destroyed: (if $destroyed == "" then null else ($destroyed | tonumber) end),
+     resources_checked_in_aws: $checked,
+     orphaned: ($orphans != 0)
+   }' > "${EVIDENCE_DIR}/destroy-check.json"
+ok "evidence -> ${EVIDENCE_DIR}/destroy-check.json"
 
 [[ "${ORPHANS}" -eq 0 ]] || die "teardown left orphaned resources -- investigate before submitting"
 ok "No orphaned resources remain (${CHECKED} resources checked)"

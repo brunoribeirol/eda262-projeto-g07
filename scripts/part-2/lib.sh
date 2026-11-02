@@ -50,6 +50,58 @@ table_location() {
 now_utc_sql() { date -u '+%Y-%m-%d %H:%M:%S'; }
 now_utc_iso() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 
+# --- run identity ---------------------------------------------------------------
+
+# Every evidence file records the run that produced it. run_all.sh exports one id for the
+# whole cycle and every script it calls inherits it; a script run on its own mints its own.
+# That is what lets verifica.sh tell evidence from ONE execution apart from a mix of runs.
+if [[ -z "${EDA262_RUN_ID:-}" ]]; then
+  EDA262_RUN_ID="$(date -u '+%Y%m%dT%H%M%SZ')"
+fi
+export EDA262_RUN_ID
+RUN_ID="${EDA262_RUN_ID}"
+RUN_MANIFEST="${EVIDENCE_DIR}/run-manifest.json"
+
+# Per-run evidence: overwritten by each full cycle and expected to share one run_id.
+# load-history.jsonl is the exception -- an append-only log across every run ever made.
+PER_RUN_EVIDENCE="run-manifest.json apply-check.json kev-ingest.json epss-ingest.json
+refined-build.json query-cost.json cost-comparison.json business-question-result.csv
+grain-check-result.csv epss-sample-stability.csv idempotency-check.json
+idempotency-epss-reload.json idempotency-refined-rebuild.json access-matrix.json
+verifica-output.txt destroy-check.json"
+
+# Updates run-manifest.json in place with a jq filter.
+manifest_update() {
+  local tmp
+  tmp="$(mktemp)"
+  jq "$@" "${RUN_MANIFEST}" > "${tmp}" && mv "${tmp}" "${RUN_MANIFEST}"
+}
+
+# run_acceptance [verifica.sh args...] -> runs the Part 2 acceptance script, keeps its output
+# as verifica-output.txt and records the result under .verifica in run-manifest.json, so the
+# manifest and the output file always describe the same verifica run. Returns its status.
+run_acceptance() {
+  local status line
+  set +e
+  "${REPO_ROOT}/verificacao/verifica.sh" --parte 2 "$@" | tee "${EVIDENCE_DIR}/verifica-output.txt"
+  status=${PIPESTATUS[0]}
+  set -e
+  # "Resultado: N PASSA / M FALHA  (total: T criterios)" -- strip colors, keep the numbers.
+  line="$(sed $'s/\033\\[[0-9;]*m//g' "${EVIDENCE_DIR}/verifica-output.txt" | grep '^Resultado:' | tail -n 1 || true)"
+  manifest_update --arg at "$(now_utc_iso)" --arg line "${line}" --argjson status "${status}" \
+    '.verifica = {exit_status: $status, summary: $line, finished_at_utc: $at}'
+  return "${status}"
+}
+
+# sha256 of a file, portable across macOS (shasum) and Linux (sha256sum).
+file_sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{ print $1 }'
+  else
+    shasum -a 256 "$1" | awk '{ print $1 }'
+  fi
+}
+
 # --- dates ----------------------------------------------------------------------
 
 if date --version >/dev/null 2>&1; then

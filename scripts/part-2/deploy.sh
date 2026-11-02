@@ -8,6 +8,10 @@
 # account-wide settings; destroy.sh puts the saved copy back, so the account is left
 # exactly as it was found.
 #
+# Evidence: docs/evidence/part-2/apply-check.json -- what this apply created, changed and
+# destroyed, as Terraform itself reports it. On a reference run (lake destroyed first) it
+# is the "apply from scratch" the demo slide shows.
+#
 # Usage: scripts/part-2/deploy.sh [--profile NAME] [--region REGION] [--workspace NAME] [--plan-only]
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -23,7 +27,7 @@ while [[ $# -gt 0 ]]; do
     --region)    REGION="${2:?--region needs a value}"; shift 2 ;;
     --workspace) WORKSPACE="${2:?--workspace needs a value}"; shift 2 ;;
     --plan-only) PLAN_ONLY=1; shift ;;
-    -h|--help)   sed -n '2,12p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help)   sed -n '2,16p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -60,8 +64,36 @@ if [[ ! -f "${SETTINGS_BACKUP}" ]] \
   ok "saved -> ${SETTINGS_BACKUP}"
 fi
 
+# Managed resources already in the state: 0 means this apply starts from scratch. A re-run
+# after a partial apply would also report "N added, 0 changed, 0 destroyed", so the counts
+# alone cannot tell.
+STATE_BEFORE="$(terraform -chdir="${TF_DIR}" state list 2>/dev/null | grep -cvE '(^|[.])data[.]' || true)"
+STATE_BEFORE="${STATE_BEFORE:-0}"
+
 log "Applying"
-terraform -chdir="${TF_DIR}" apply -input=false -auto-approve "${TF_VARS[@]}"
+APPLY_LOG="$(mktemp)"
+terraform -chdir="${TF_DIR}" apply -input=false -auto-approve "${TF_VARS[@]}" | tee "${APPLY_LOG}"
+# "Apply complete! Resources: 74 added, 0 changed, 0 destroyed." -- Terraform's own count.
+APPLY_COUNTS="$(sed -n 's/.*Apply complete! Resources: \([0-9][0-9]*\) added, \([0-9][0-9]*\) changed, \([0-9][0-9]*\) destroyed.*/\1 \2 \3/p' "${APPLY_LOG}" | tail -n 1)"
+rm -f "${APPLY_LOG}"
+[[ -n "${APPLY_COUNTS}" ]] || die "terraform apply did not report 'Apply complete!'"
+read -r ADDED CHANGED DESTROYED <<< "${APPLY_COUNTS}"
+
+mkdir -p "${EVIDENCE_DIR}"
+jq -n --arg run_id "${RUN_ID}" --arg applied_at "$(now_utc_iso)" --arg region "${REGION}" \
+  --arg workspace "${WORKSPACE}" --argjson added "${ADDED}" --argjson changed "${CHANGED}" \
+  --argjson destroyed "${DESTROYED}" --argjson before "${STATE_BEFORE}" \
+  '{
+     run_id: $run_id,
+     applied_at_utc: $applied_at,
+     region: $region,
+     workspace: $workspace,
+     resources_added: $added,
+     resources_changed: $changed,
+     resources_destroyed: $destroyed,
+     resources_in_state_before: $before,
+     from_scratch: ($before == 0 and $added > 0)
+   }' > "${EVIDENCE_DIR}/apply-check.json"
 
 echo
 ok "Workspace          : $(tf_output workspace)"
@@ -70,6 +102,7 @@ ok "Glue databases     : $(tf_output raw_db), $(tf_output trusted_db), $(tf_outp
 ok "Pipeline WorkGroup : $(tf_output pipeline_workgroup)"
 ok "Lake Formation admin (pipeline): $(tf_output lakeformation_admin)"
 tf_output_json personas | jq -r 'to_entries[] | "  OK persona \(.key): \(.value.workgroup) reads \(.value.layers | join(", "))"'
+ok "Evidence           : ${EVIDENCE_DIR}/apply-check.json (${ADDED} added, ${CHANGED} changed, ${DESTROYED} destroyed)"
 
 if [[ "$(tf_output is_delivery_workspace)" != "true" ]]; then
   warn "Workspace '${WORKSPACE}' is not the delivery workspace: resource names carry a suffix."

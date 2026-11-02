@@ -230,6 +230,7 @@ ok "trusted: every day landed with its source row count, 1 model version and 0 d
 # --- evidence --------------------------------------------------------------------
 mkdir -p "${EVIDENCE_DIR}"
 jq -n \
+  --arg run_id "${RUN_ID}" \
   --arg mode "${MODE}" --arg from "${FROM}" --arg to "${TO}" --arg ingested_at "${INGESTED_AT}" \
   --slurpfile batches "${BATCHES}" \
   --argjson days "$(jq -R -s 'split("\n") | map(select(length > 0) | split("\t")
@@ -238,6 +239,7 @@ jq -n \
   --argjson trusted "$(jq -R -s 'split("\n") | map(select(length > 0) | split("\t")
                       | {snapshot_date: .[0], rows: (.[1] | tonumber), distinct_cve_id: (.[2] | tonumber)})' "${WORK_DIR}/trusted.tsv")" \
   '{
+     run_id: $run_id,
      source: "first-epss",
      mode: $mode,
      range: {from: $from, to: $to},
@@ -257,7 +259,7 @@ jq -n \
 
 # One line per load, never rewritten: the lake's growth over time, run by run.
 jq -c '{
-    ingested_at_utc, source, mode, from: .range.from, to: .range.to, partitions,
+    run_id, ingested_at_utc, source, mode, from: .range.from, to: .range.to, partitions,
     source_rows: .totals.source_rows, trusted_rows: .totals.trusted_rows,
     insert_scanned_bytes: .totals.insert_scanned_bytes,
     inserts: (.trusted_inserts | length)

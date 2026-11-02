@@ -115,9 +115,11 @@ UNPROVEN_LAYERS="$(jq -s -r '[group_by(.layer)[] | select(all(.actual != "grante
 
 mkdir -p "${EVIDENCE_DIR}"
 jq -s \
+  --arg run_id "${RUN_ID}" \
   --arg checked_at "$(now_utc_iso)" --arg kev "${KEV_DATE}" --arg refined "${REFINED_DATE}" \
   --arg unproven "${UNPROVEN_LAYERS}" \
   '{
+     run_id: $run_id,
      checked_at_utc: $checked_at,
      enforced_by: "AWS Lake Formation (identical IAM policy for every persona)",
      probes: {raw: ("kev_records@" + $kev), trusted: ("kev_vulnerabilities@" + $kev), refined: ("vendor_exposure_daily@" + $refined)},

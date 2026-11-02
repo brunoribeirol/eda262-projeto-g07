@@ -116,6 +116,7 @@ ok "trusted: ${T_ROWS} rows / ${T_DISTINCT} distinct cve_id; whitespace fixed on
 # --- evidence --------------------------------------------------------------------
 mkdir -p "${EVIDENCE_DIR}"
 jq -n \
+  --arg run_id "${RUN_ID}" \
   --arg catalog_version "${CATALOG_VERSION}" \
   --arg catalog_date "${CATALOG_DATE}" \
   --arg ingested_at "${INGESTED_AT}" \
@@ -127,6 +128,7 @@ jq -n \
   --argjson trusted_distinct_cve_id "${T_DISTINCT}" \
   --argjson insert "${INSERT_STATS}" \
   '{
+     run_id: $run_id,
      source: "cisa-kev",
      catalog_version: $catalog_version,
      catalog_date: $catalog_date,
@@ -142,7 +144,7 @@ jq -n \
    }' > "${EVIDENCE_DIR}/kev-ingest.json"
 
 jq -c '{
-    ingested_at_utc, source, mode: "snapshot", from: .catalog_date, to: .catalog_date, partitions: 1,
+    run_id, ingested_at_utc, source, mode: "snapshot", from: .catalog_date, to: .catalog_date, partitions: 1,
     source_rows: .source_entries, trusted_rows, insert_scanned_bytes: .trusted_insert.data_scanned_bytes, inserts: 1
   }' "${EVIDENCE_DIR}/kev-ingest.json" >> "${EVIDENCE_DIR}/load-history.jsonl"
 

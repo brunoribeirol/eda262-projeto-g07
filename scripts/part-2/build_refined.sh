@@ -117,12 +117,14 @@ ok "refined: ${BUILT_DAYS} day(s), one row per vendor per day"
 # --- evidence --------------------------------------------------------------------
 mkdir -p "${EVIDENCE_DIR}"
 jq -n \
+  --arg run_id "${RUN_ID}" \
   --arg from "${FROM}" --arg to "${TO}" --arg kev "${KEV_CATALOG_DATE}" --arg built_at "${BUILT_AT}" \
   --slurpfile batches "${BATCHES}" \
   --argjson days "$(jq -R -s 'split("\n") | map(select(length > 0) | split("\t")
                      | {snapshot_date: .[0], rows: (.[1] | tonumber), vendors: (.[2] | tonumber),
                         kev_cves: (.[3] | tonumber), epss_scored_cves: (.[4] | tonumber)})' "${WORK_DIR}/refined.tsv")" \
   '{
+     run_id: $run_id,
      table: "refined.vendor_exposure_daily",
      grain: "one row per (vendor_project, snapshot_date)",
      range: {from: $from, to: $to},
@@ -135,7 +137,7 @@ jq -n \
    }' > "${EVIDENCE_DIR}/${EVIDENCE_FILE}"
 
 jq -c '{
-    ingested_at_utc: .built_at_utc, source: "refined.vendor_exposure_daily", mode: "build",
+    run_id, ingested_at_utc: .built_at_utc, source: "refined.vendor_exposure_daily", mode: "build",
     from: .range.from, to: .range.to, partitions, rows, kev_catalog_date,
     insert_scanned_bytes: (.inserts | map(.data_scanned_bytes) | add),
     inserts: (.inserts | length)

@@ -75,12 +75,14 @@ fi
 
 mkdir -p "${EVIDENCE_DIR}"
 jq -n \
+  --arg run_id "${RUN_ID}" \
   --arg day "${DAY}" --arg checked_at "$(now_utc_iso)" --argjson idempotent "${IDEMPOTENT}" \
   --argjson t_rows_1 "${T_ROWS_1}" --argjson t_keys_1 "${T_KEYS_1}" --argjson t_files_1 "${T_FILES_1}" \
   --argjson t_rows_2 "${T_ROWS_2}" --argjson t_keys_2 "${T_KEYS_2}" --argjson t_files_2 "${T_FILES_2}" \
   --argjson r_rows_1 "${R_ROWS_1}" --argjson r_keys_1 "${R_KEYS_1}" --argjson r_files_1 "${R_FILES_1}" \
   --argjson r_rows_2 "${R_ROWS_2}" --argjson r_keys_2 "${R_KEYS_2}" --argjson r_files_2 "${R_FILES_2}" \
   '{
+     run_id: $run_id,
      day: $day,
      checked_at_utc: $checked_at,
      method: "partition overwrite: clear the partition prefix, then INSERT INTO",

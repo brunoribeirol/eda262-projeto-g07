@@ -8,6 +8,7 @@
 #   3. the same question computed from the raw files      -> what the whole lake saves
 #   4. one EPSS column for 1 day vs the whole window      -> what partitioning saves
 #   5. grain assertion on every trusted/refined table
+#   6. how much a vendor's average EPSS moves, by sample size -> backs min_epss_sample_size
 #
 # The SQL is fetched from the Athena named queries Terraform created, so what runs is
 # provably what is in parte-2/sql/analytics/. The three answers must be identical.
@@ -17,6 +18,11 @@
 #   query-cost.json               measured cost of the graded query vs the declared target
 #   cost-comparison.json          raw vs trusted vs refined, and partition pruning
 #   grain-check-result.csv        duplicate_rows per table (must all be 0)
+#   epss-sample-stability.csv     |change| of the vendor EPSS average by sample-size bucket
+#
+# The window is anchored on the data -- the newest refined partition and the N days before
+# it -- never on today's date, so re-running against the same lake gives the same answer.
+# The cost target scales with it: cost_target_bytes_per_window_day x days in the window.
 #
 # Usage: scripts/part-2/run_query.sh [--profile NAME] [--window-days 30] [--price-per-tb USD]
 
@@ -30,7 +36,7 @@ while [[ $# -gt 0 ]]; do
     --profile)      PROFILE="${2:?--profile needs a value}"; shift 2 ;;
     --window-days)  WINDOW_DAYS="${2:?--window-days needs a value}"; shift 2 ;;
     --price-per-tb) PRICE_PER_TB="${2:?--price-per-tb needs a value}"; shift 2 ;;
-    -h|--help)      sed -n '2,23p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help)      sed -n '2,27p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -43,7 +49,7 @@ RAW_DB="$(tf_output raw_db)"
 TRUSTED_DB="$(tf_output trusted_db)"
 REFINED_DB="$(tf_output refined_db)"
 WORKGROUP="$(tf_output pipeline_workgroup)"
-TARGET_BYTES="$(tf_output cost_target_bytes_per_query)"
+TARGET_PER_DAY="$(tf_output cost_target_bytes_per_window_day)"
 
 # --- window -------------------------------------------------------------------------
 LAST_DAY="$(latest_partition "${REFINED_DB}" vendor_exposure_daily)"
@@ -99,6 +105,12 @@ GRAIN_CSV="${EVIDENCE_DIR}/grain-check-result.csv"
 athena_result_csv "${GRAIN_ID}" "${GRAIN_CSV}"
 GRAIN_DUPLICATES="$(awk -F'","' 'NR > 1 { gsub(/"/, "", $5); total += $5 } END { print total + 0 }' "${GRAIN_CSV}")"
 
+# --- 6. sample size -------------------------------------------------------------------
+STABILITY_ID="$(athena_must "EPSS average stability by sample size" \
+  "$(named_query_sql epss-sample-stability)" "${WORKGROUP}" "${REFINED_DB}" "$(q "${FIRST_DAY}")" "$(q "${LAST_DAY}")")"
+STABILITY_CSV="${EVIDENCE_DIR}/epss-sample-stability.csv"
+athena_result_csv "${STABILITY_ID}" "${STABILITY_CSV}"
+
 # --- evidence -----------------------------------------------------------------------
 stats_with_cost() {
   local stats bytes
@@ -115,19 +127,26 @@ ONE_DAY_STATS="$(stats_with_cost "${ONE_DAY_ID}")"
 ALL_DAYS_STATS="$(stats_with_cost "${ALL_DAYS_ID}")"
 
 REFINED_BYTES="$(jq -r '.data_scanned_bytes' <<< "${REFINED_STATS}")"
-TARGET_MET=false
-(( REFINED_BYTES <= TARGET_BYTES )) && TARGET_MET=true
 WINDOW_PARTITIONS="$(glue_partition_values "${REFINED_DB}" vendor_exposure_daily \
                       | awk -v f="${FIRST_DAY}" -v l="${LAST_DAY}" '$0 >= f && $0 <= l' | wc -l | tr -d ' ')"
+TARGET_BYTES=$(( TARGET_PER_DAY * WINDOW_PARTITIONS ))
+TARGET_MET=false
+(( REFINED_BYTES <= TARGET_BYTES )) && TARGET_MET=true
 
 jq -n \
+  --arg run_id "${RUN_ID}" \
   --arg first "${FIRST_DAY}" --arg last "${LAST_DAY}" --arg kev "${KEV_DATE}" \
   --arg region "$(tf_output aws_region)" --arg workgroup "${WORKGROUP}" \
   --arg measured_at "$(now_utc_iso)" --arg price "${PRICE_PER_TB}" \
-  --argjson target "${TARGET_BYTES}" --argjson target_met "${TARGET_MET}" \
+  --argjson target "${TARGET_BYTES}" --argjson target_per_day "${TARGET_PER_DAY}" \
+  --argjson target_met "${TARGET_MET}" \
   --argjson min_billed "${ATHENA_MIN_BILLED_BYTES}" --argjson window_partitions "${WINDOW_PARTITIONS}" \
   --argjson stats "${REFINED_STATS}" --argjson grain_duplicates "${GRAIN_DUPLICATES}" \
+  --arg grain_id "${GRAIN_ID}" --arg stability_id "${STABILITY_ID}" \
+  --arg result_sha "$(file_sha256 "${RESULT_CSV}")" --arg grain_sha "$(file_sha256 "${GRAIN_CSV}")" \
+  --arg stability_sha "$(file_sha256 "${STABILITY_CSV}")" \
   '{
+     run_id: $run_id,
      query: "top vendors by KEV CVEs added in the last 12 months, with their EPSS over the window",
      layer: "refined",
      window: {first_day: $first, last_day: $last, partitions: $window_partitions},
@@ -143,15 +162,28 @@ jq -n \
      total_execution_ms: $stats.total_execution_ms,
      price_per_tb_usd: $price,
      cost_usd: $stats.cost_usd,
-     cost_target: {max_scanned_bytes: $target, met: $target_met},
-     grain_check: {duplicate_rows: $grain_duplicates}
+     cost_target: {
+       bytes_per_window_day: $target_per_day,
+       window_days: $window_partitions,
+       max_scanned_bytes: $target,
+       met: $target_met
+     },
+     grain_check: {execution_id: $grain_id, duplicate_rows: $grain_duplicates},
+     sample_stability: {execution_id: $stability_id},
+     result_files_sha256: {
+       "business-question-result.csv": $result_sha,
+       "grain-check-result.csv": $grain_sha,
+       "epss-sample-stability.csv": $stability_sha
+     }
    }' > "${EVIDENCE_DIR}/query-cost.json"
 
 jq -n \
   --argjson refined "${REFINED_STATS}" --argjson trusted "${TRUSTED_STATS}" --argjson raw "${RAW_STATS}" \
   --argjson one_day "${ONE_DAY_STATS}" --argjson all_days "${ALL_DAYS_STATS}" \
   --argjson identical "${RESULTS_IDENTICAL}" --arg first "${FIRST_DAY}" --arg last "${LAST_DAY}" \
+  --arg run_id "${RUN_ID}" \
   '{
+     run_id: $run_id,
      window: {first_day: $first, last_day: $last},
      results_identical_across_layers: $identical,
      business_question: {raw: $raw, trusted: $trusted, refined: $refined},
@@ -170,8 +202,16 @@ jq -n \
 # --- report -------------------------------------------------------------------------
 echo
 printf '%sBusiness question -- %s .. %s%s\n\n' "${C_BOLD}" "${FIRST_DAY}" "${LAST_DAY}" "${C_RESET}"
-awk -F'","' '{ gsub(/^"|"$/, ""); printf "  %-24s %8s %8s %8s %10s %10s %10s %6s\n", $1, $2, $3, $4, $5, $6, $7, $8 }' \
-  "${RESULT_CSV}" | head -16
+# Rows come from the API, not the CSV: NULL averages (sample too small) are empty there.
+printf '  %4s %-22s %6s %5s %6s %6s %8s %8s %8s %5s\n' \
+  rank vendor kev12m n ransom ge10pc latest window change days
+athena_rows_tsv "${REFINED_ID}" \
+  | awk -F'\t' '{ for (i = 7; i <= 9; i++) if ($i == "") $i = "n<min"
+                  printf "  %4s %-22s %6s %5s %6s %6s %8s %8s %8s %5s\n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10 }'
+echo
+printf '%sEPSS average |change| over the window, by sample size%s\n' "${C_BOLD}" "${C_RESET}"
+athena_rows_tsv "${STABILITY_ID}" \
+  | awk -F'\t' '{ printf "  n %-6s %4s vendors  median %-7s p90 %-7s max %s\n", $1, $2, $3, $4, $5 }'
 echo
 printf '%sCost per execution of the same question%s\n' "${C_BOLD}" "${C_RESET}"
 for layer in raw trusted refined; do
@@ -187,9 +227,11 @@ ok "result      -> ${RESULT_CSV}"
 ok "cost        -> ${EVIDENCE_DIR}/query-cost.json"
 ok "comparison  -> ${EVIDENCE_DIR}/cost-comparison.json"
 ok "grain       -> ${GRAIN_CSV}"
+ok "sample size -> ${STABILITY_CSV}"
 
 # Fail loudly AFTER writing the evidence, so a miss is documented, not hidden.
 [[ "${GRAIN_DUPLICATES}" -eq 0 ]] || die "grain violated: ${GRAIN_DUPLICATES} duplicate key rows"
 [[ "${RESULTS_IDENTICAL}" == "true" ]] || die "the layers disagree on the answer -- a transformation is wrong"
-[[ "${TARGET_MET}" == "true" ]] || die "cost target missed: ${REFINED_BYTES} bytes scanned > target ${TARGET_BYTES}"
-ok "cost target met: ${REFINED_BYTES} bytes scanned <= ${TARGET_BYTES} (USD $(jq -r '.cost_usd' <<< "${REFINED_STATS}"))"
+[[ "${TARGET_MET}" == "true" ]] \
+  || die "cost target missed: ${REFINED_BYTES} bytes scanned > ${TARGET_BYTES} (${TARGET_PER_DAY} B x ${WINDOW_PARTITIONS} days)"
+ok "cost target met: ${REFINED_BYTES} bytes scanned <= ${TARGET_BYTES} (${TARGET_PER_DAY} B x ${WINDOW_PARTITIONS} days; USD $(jq -r '.cost_usd' <<< "${REFINED_STATS}"))"
