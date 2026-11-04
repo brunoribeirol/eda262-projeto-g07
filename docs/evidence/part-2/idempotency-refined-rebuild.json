@@ -1,33 +1,34 @@
 {
+  "run_id": "20261102T051658Z",
   "table": "refined.vendor_exposure_daily",
   "grain": "one row per (vendor_project, snapshot_date)",
   "range": {
-    "from": "2026-10-20",
-    "to": "2026-10-20"
+    "from": "2026-10-30",
+    "to": "2026-10-30"
   },
-  "kev_catalog_date": "2026-10-20",
-  "built_at_utc": "2026-10-20 21:40:26",
+  "kev_catalog_date": "2026-10-30",
+  "built_at_utc": "2026-11-02 05:27:47",
   "partitions": 1,
-  "rows": 290,
+  "rows": 291,
   "inserts": [
     {
-      "from": "2026-10-20",
-      "to": "2026-10-20",
+      "from": "2026-10-30",
+      "to": "2026-10-30",
       "partitions": 1,
-      "execution_id": "7b50a81d-a766-4f3f-bcb2-e4937b45c272",
-      "data_scanned_bytes": 1951209,
-      "engine_execution_ms": 2118,
-      "total_execution_ms": 2360,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/7b50a81d-a766-4f3f-bcb2-e4937b45c272"
+      "execution_id": "840af9c5-dcc8-410d-8048-dcb8da1e6470",
+      "data_scanned_bytes": 1977629,
+      "engine_execution_ms": 1741,
+      "total_execution_ms": 1970,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/840af9c5-dcc8-410d-8048-dcb8da1e6470"
     }
   ],
   "days": [
     {
-      "snapshot_date": "2026-10-20",
-      "rows": 290,
-      "vendors": 290,
-      "kev_cves": 1754,
-      "epss_scored_cves": 1754
+      "snapshot_date": "2026-10-30",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1766,
+      "epss_scored_cves": 1765
     }
   ]
 }

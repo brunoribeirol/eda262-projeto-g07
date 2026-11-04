@@ -1,80 +1,21 @@
 {
+  "run_id": "20261102T051658Z",
   "source": "first-epss",
   "mode": "backfill",
   "range": {
-    "from": "2026-09-21",
-    "to": "2026-10-20"
+    "from": "2026-10-01",
+    "to": "2026-10-30"
   },
   "partitions": 30,
-  "ingested_at_utc": "2026-10-20 21:33:03",
+  "ingested_at_utc": "2026-11-02 05:22:29",
   "totals": {
-    "source_rows": 11519635,
-    "source_gzip_bytes": 80917274,
-    "trusted_rows": 11519635,
-    "insert_scanned_bytes": 80917274
+    "source_rows": 11684958,
+    "source_gzip_bytes": 82013574,
+    "trusted_rows": 11684958,
+    "insert_scanned_bytes": 82013574
   },
   "grain": "one row per (cve_id, snapshot_date)",
   "days": [
-    {
-      "snapshot_date": "2026-09-21",
-      "source_rows": 377333,
-      "source_gzip_bytes": 2653502,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-22",
-      "source_rows": 377636,
-      "source_gzip_bytes": 2658506,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-23",
-      "source_rows": 378156,
-      "source_gzip_bytes": 2662848,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-24",
-      "source_rows": 378567,
-      "source_gzip_bytes": 2660997,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-25",
-      "source_rows": 379145,
-      "source_gzip_bytes": 2664342,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-26",
-      "source_rows": 379842,
-      "source_gzip_bytes": 2668752,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-27",
-      "source_rows": 380066,
-      "source_gzip_bytes": 2671545,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-28",
-      "source_rows": 380224,
-      "source_gzip_bytes": 2672841,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-29",
-      "source_rows": 380526,
-      "source_gzip_bytes": 2675299,
-      "model_version": "v2026.06.15"
-    },
-    {
-      "snapshot_date": "2026-09-30",
-      "source_rows": 381189,
-      "source_gzip_bytes": 2678958,
-      "model_version": "v2026.06.15"
-    },
     {
       "snapshot_date": "2026-10-01",
       "source_rows": 381682,
@@ -194,59 +135,69 @@
       "source_rows": 391915,
       "source_gzip_bytes": 2748018,
       "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-21",
+      "source_rows": 393867,
+      "source_gzip_bytes": 2762553,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-22",
+      "source_rows": 394415,
+      "source_gzip_bytes": 2766315,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-23",
+      "source_rows": 394803,
+      "source_gzip_bytes": 2767303,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-24",
+      "source_rows": 395249,
+      "source_gzip_bytes": 2769604,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-25",
+      "source_rows": 395308,
+      "source_gzip_bytes": 2773610,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-26",
+      "source_rows": 395492,
+      "source_gzip_bytes": 2775639,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-27",
+      "source_rows": 396257,
+      "source_gzip_bytes": 2781640,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-28",
+      "source_rows": 396966,
+      "source_gzip_bytes": 2785381,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-29",
+      "source_rows": 397508,
+      "source_gzip_bytes": 2789117,
+      "model_version": "v2026.06.15"
+    },
+    {
+      "snapshot_date": "2026-10-30",
+      "source_rows": 398142,
+      "source_gzip_bytes": 2792728,
+      "model_version": "v2026.06.15"
     }
   ],
   "trusted": [
-    {
-      "snapshot_date": "2026-09-21",
-      "rows": 377333,
-      "distinct_cve_id": 377333
-    },
-    {
-      "snapshot_date": "2026-09-22",
-      "rows": 377636,
-      "distinct_cve_id": 377636
-    },
-    {
-      "snapshot_date": "2026-09-23",
-      "rows": 378156,
-      "distinct_cve_id": 378156
-    },
-    {
-      "snapshot_date": "2026-09-24",
-      "rows": 378567,
-      "distinct_cve_id": 378567
-    },
-    {
-      "snapshot_date": "2026-09-25",
-      "rows": 379145,
-      "distinct_cve_id": 379145
-    },
-    {
-      "snapshot_date": "2026-09-26",
-      "rows": 379842,
-      "distinct_cve_id": 379842
-    },
-    {
-      "snapshot_date": "2026-09-27",
-      "rows": 380066,
-      "distinct_cve_id": 380066
-    },
-    {
-      "snapshot_date": "2026-09-28",
-      "rows": 380224,
-      "distinct_cve_id": 380224
-    },
-    {
-      "snapshot_date": "2026-09-29",
-      "rows": 380526,
-      "distinct_cve_id": 380526
-    },
-    {
-      "snapshot_date": "2026-09-30",
-      "rows": 381189,
-      "distinct_cve_id": 381189
-    },
     {
       "snapshot_date": "2026-10-01",
       "rows": 381682,
@@ -346,18 +297,68 @@
       "snapshot_date": "2026-10-20",
       "rows": 391915,
       "distinct_cve_id": 391915
+    },
+    {
+      "snapshot_date": "2026-10-21",
+      "rows": 393867,
+      "distinct_cve_id": 393867
+    },
+    {
+      "snapshot_date": "2026-10-22",
+      "rows": 394415,
+      "distinct_cve_id": 394415
+    },
+    {
+      "snapshot_date": "2026-10-23",
+      "rows": 394803,
+      "distinct_cve_id": 394803
+    },
+    {
+      "snapshot_date": "2026-10-24",
+      "rows": 395249,
+      "distinct_cve_id": 395249
+    },
+    {
+      "snapshot_date": "2026-10-25",
+      "rows": 395308,
+      "distinct_cve_id": 395308
+    },
+    {
+      "snapshot_date": "2026-10-26",
+      "rows": 395492,
+      "distinct_cve_id": 395492
+    },
+    {
+      "snapshot_date": "2026-10-27",
+      "rows": 396257,
+      "distinct_cve_id": 396257
+    },
+    {
+      "snapshot_date": "2026-10-28",
+      "rows": 396966,
+      "distinct_cve_id": 396966
+    },
+    {
+      "snapshot_date": "2026-10-29",
+      "rows": 397508,
+      "distinct_cve_id": 397508
+    },
+    {
+      "snapshot_date": "2026-10-30",
+      "rows": 398142,
+      "distinct_cve_id": 398142
     }
   ],
   "trusted_inserts": [
     {
-      "from": "2026-09-21",
-      "to": "2026-10-20",
+      "from": "2026-10-01",
+      "to": "2026-10-30",
       "partitions": 30,
-      "execution_id": "953869a1-1ada-43e7-8021-12f417c39faa",
-      "data_scanned_bytes": 80917274,
-      "engine_execution_ms": 28902,
-      "total_execution_ms": 29188,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/953869a1-1ada-43e7-8021-12f417c39faa"
+      "execution_id": "7f08f7c5-943b-43b1-99ea-20faf7cb304b",
+      "data_scanned_bytes": 82013574,
+      "engine_execution_ms": 29605,
+      "total_execution_ms": 29899,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/7f08f7c5-943b-43b1-99ea-20faf7cb304b"
     }
   ]
 }

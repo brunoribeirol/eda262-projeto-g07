@@ -1,97 +1,28 @@
 {
+  "run_id": "20261102T051658Z",
   "table": "refined.vendor_exposure_daily",
   "grain": "one row per (vendor_project, snapshot_date)",
   "range": {
-    "from": "2026-09-21",
-    "to": "2026-10-20"
+    "from": "2026-10-01",
+    "to": "2026-10-30"
   },
-  "kev_catalog_date": "2026-10-20",
-  "built_at_utc": "2026-10-20 21:35:23",
+  "kev_catalog_date": "2026-10-30",
+  "built_at_utc": "2026-11-02 05:23:53",
   "partitions": 30,
-  "rows": 8569,
+  "rows": 8647,
   "inserts": [
     {
-      "from": "2026-09-21",
-      "to": "2026-10-20",
+      "from": "2026-10-01",
+      "to": "2026-10-30",
       "partitions": 30,
-      "execution_id": "7c090f3e-2684-456d-b7c1-c5e6b7bbd2bb",
-      "data_scanned_bytes": 56922386,
-      "engine_execution_ms": 7057,
-      "total_execution_ms": 7377,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/7c090f3e-2684-456d-b7c1-c5e6b7bbd2bb"
+      "execution_id": "af79963c-d2d6-48e3-9584-7105cea12f86",
+      "data_scanned_bytes": 57860819,
+      "engine_execution_ms": 6425,
+      "total_execution_ms": 6684,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/af79963c-d2d6-48e3-9584-7105cea12f86"
     }
   ],
   "days": [
-    {
-      "snapshot_date": "2026-09-21",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1717,
-      "epss_scored_cves": 1717
-    },
-    {
-      "snapshot_date": "2026-09-22",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1721,
-      "epss_scored_cves": 1719
-    },
-    {
-      "snapshot_date": "2026-09-23",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1721,
-      "epss_scored_cves": 1721
-    },
-    {
-      "snapshot_date": "2026-09-24",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1723,
-      "epss_scored_cves": 1723
-    },
-    {
-      "snapshot_date": "2026-09-25",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1726,
-      "epss_scored_cves": 1726
-    },
-    {
-      "snapshot_date": "2026-09-26",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1726,
-      "epss_scored_cves": 1726
-    },
-    {
-      "snapshot_date": "2026-09-27",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1728,
-      "epss_scored_cves": 1726
-    },
-    {
-      "snapshot_date": "2026-09-28",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1728,
-      "epss_scored_cves": 1728
-    },
-    {
-      "snapshot_date": "2026-09-29",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1729,
-      "epss_scored_cves": 1729
-    },
-    {
-      "snapshot_date": "2026-09-30",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1730,
-      "epss_scored_cves": 1729
-    },
     {
       "snapshot_date": "2026-10-01",
       "rows": 283,
@@ -231,6 +162,76 @@
       "vendors": 290,
       "kev_cves": 1754,
       "epss_scored_cves": 1754
+    },
+    {
+      "snapshot_date": "2026-10-21",
+      "rows": 290,
+      "vendors": 290,
+      "kev_cves": 1754,
+      "epss_scored_cves": 1754
+    },
+    {
+      "snapshot_date": "2026-10-22",
+      "rows": 290,
+      "vendors": 290,
+      "kev_cves": 1754,
+      "epss_scored_cves": 1754
+    },
+    {
+      "snapshot_date": "2026-10-23",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1756,
+      "epss_scored_cves": 1756
+    },
+    {
+      "snapshot_date": "2026-10-24",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1756,
+      "epss_scored_cves": 1756
+    },
+    {
+      "snapshot_date": "2026-10-25",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1756,
+      "epss_scored_cves": 1756
+    },
+    {
+      "snapshot_date": "2026-10-26",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1758,
+      "epss_scored_cves": 1758
+    },
+    {
+      "snapshot_date": "2026-10-27",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1760,
+      "epss_scored_cves": 1760
+    },
+    {
+      "snapshot_date": "2026-10-28",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1762,
+      "epss_scored_cves": 1762
+    },
+    {
+      "snapshot_date": "2026-10-29",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1764,
+      "epss_scored_cves": 1764
+    },
+    {
+      "snapshot_date": "2026-10-30",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1766,
+      "epss_scored_cves": 1765
     }
   ]
 }

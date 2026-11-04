@@ -1,10 +1,11 @@
 {
-  "checked_at_utc": "2026-10-20T21:46:25Z",
+  "run_id": "20261102T051658Z",
+  "checked_at_utc": "2026-11-02T05:29:01Z",
   "enforced_by": "AWS Lake Formation (identical IAM policy for every persona)",
   "probes": {
-    "raw": "kev_records@2026-10-20",
-    "trusted": "kev_vulnerabilities@2026-10-20",
-    "refined": "vendor_exposure_daily@2026-10-20"
+    "raw": "kev_records@2026-10-30",
+    "trusted": "kev_vulnerabilities@2026-10-30",
+    "refined": "vendor_exposure_daily@2026-10-30"
   },
   "checks": 9,
   "matches": 9,
@@ -17,7 +18,7 @@
       "expected": "denied",
       "actual": "denied",
       "match": true,
-      "execution_id": "baedc1a1-c04e-47f0-9956-d1710cdb6c51",
+      "execution_id": "a2d5540e-46fb-4698-b8c8-57b74b5ef863",
       "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_raw  "
     },
     {
@@ -26,7 +27,7 @@
       "expected": "denied",
       "actual": "denied",
       "match": true,
-      "execution_id": "95ec5d98-482c-445d-a09f-ebadd23a2f31",
+      "execution_id": "7946cbfc-678d-4085-97b9-eb085833ee0c",
       "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_trusted  "
     },
     {
@@ -35,7 +36,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "efd5020c-ce77-46f6-a03c-3d37b52cf374",
+      "execution_id": "ca7ce894-e6b3-4905-86aa-cbc3ee09cd5d",
       "reason": ""
     },
     {
@@ -44,7 +45,7 @@
       "expected": "denied",
       "actual": "denied",
       "match": true,
-      "execution_id": "cf27ef4e-0215-4812-8ade-c1522ba46fbf",
+      "execution_id": "0a417ca6-0597-4be1-bfd6-3d0bb3daa342",
       "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_raw  "
     },
     {
@@ -53,7 +54,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "31ae013a-e54f-4402-aaa0-2fe4181fdd78",
+      "execution_id": "1f27775a-ea1f-4a0a-ab02-bd6a5f6c4605",
       "reason": ""
     },
     {
@@ -62,7 +63,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "4c5d9e66-ccda-4fda-b0bf-3a940d11c989",
+      "execution_id": "bef17ba3-1ccb-4edb-87a9-6cea46847f3e",
       "reason": ""
     },
     {
@@ -71,7 +72,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "759d88fa-6567-4ae1-98dc-067b5a755020",
+      "execution_id": "ab81164e-f770-4ebb-808d-af2d50aeb8b1",
       "reason": ""
     },
     {
@@ -80,7 +81,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "f0b224e5-f8cb-4734-8f9f-22a06e6fe6a2",
+      "execution_id": "02ad66d7-bce1-43e0-b70f-f6c37dd22a19",
       "reason": ""
     },
     {
@@ -89,7 +90,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "db322469-6026-423d-9608-5fe4b8fedbc3",
+      "execution_id": "1b514e16-f6bc-40d2-86b1-48f146baa547",
       "reason": ""
     }
   ]

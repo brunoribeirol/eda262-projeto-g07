@@ -16,11 +16,12 @@ responder isso no Athena?
 
 > **Status.** A Parte 1 (AV1) foi entregue e apresentada em 05/10/2026 — tag assinada
 > [`av1-entrega`](https://github.com/brunoribeirol/eda262-projeto-g07/tree/av1-entrega).
-> A Parte 2 (AV2, prazo 30/11/2026) está implementada em `parte-2/` e `scripts/part-2/`. Primeira
-> execução na AWS em 20/10/2026: meta de custo cumprida (162.943 B varridos, USD 0,00004768),
-> respostas idênticas nas três camadas, idempotência e matriz de acesso de 9 células comprovadas.
-> O lake fica no ar para as cargas incrementais diárias até a apresentação; falta medir apenas a
-> destruição final.
+> A Parte 2 (AV2, prazo 30/11/2026) está implementada em `parte-2/` e `scripts/part-2/`. Execução
+> de referência `20261102T051658Z` (us-east-1, janela EPSS de 01/10 a 30/10/2026): 74 recursos
+> criados do zero, meta de custo cumprida (164.258 B varridos contra 491.520 B, USD 0,00004768),
+> respostas idênticas nas três camadas, idempotência e matriz de acesso de 9 células comprovadas,
+> aceite 44/44 e destroy dos mesmos 74 recursos, sem órfãos. Todo número das decisões e das
+> apresentações sai dessa execução.
 
 > **Sobre idioma.** Código, identificadores, comentários e documentação estão em inglês.
 > Cinco nomes permanecem em português porque o guia da disciplina os define como contrato com o
@@ -32,7 +33,7 @@ responder isso no Athena?
 ## Arquitetura da Parte 2
 
 ```
-  CISA KEV (JSON, ~semanal)          FIRST EPSS (CSV gzip, diário, ~384 mil CVEs)
+  CISA KEV (JSON, ~semanal)          FIRST EPSS (CSV gzip, diário, ~389 mil CVEs)
           │                                   │
           │ ingest_kev.sh                     │ ingest_epss.sh   (backfill ou incremental)
           ▼                                   ▼
@@ -116,6 +117,21 @@ pergunta com o custo medido, prova a idempotência e a matriz de acesso, e roda 
 Toda evidência vai para `docs/evidence/part-2/`. Pede confirmação antes de criar qualquer recurso.
 Acrescente `--destroy-after` para destruir tudo ao final.
 
+**Uma execução, um conjunto de evidências.** O `run_all.sh` primeiro apaga as evidências da
+execução anterior. Depois carimba cada arquivo que grava com o mesmo `run_id` e registra a execução
+(id, commit, região, janela, resultado do `verifica.sh`) em `run-manifest.json`. A execução que os
+documentos citam (a execução de referência) segue uma ordem fixa:
+
+```bash
+scripts/part-2/destroy.sh                        # lake vazio: o apply precisa partir do zero
+scripts/part-2/run_all.sh --yes --to AAAA-MM-DD  # fixa o último dia de EPSS da janela
+scripts/part-2/check_evidence_sync.sh            # atualize DECISOES.md, DECISIONS.md e as
+                                                 #   apresentações até não faltar nada
+scripts/part-2/verify_run.sh                     # aceite final, com o lake no ar
+scripts/part-2/destroy.sh                        # fecha a execução: destroy-check.json
+verificacao/verifica.sh --parte 2 --repo-only    # checagem de entrega, com o lake destruído
+```
+
 ### Ou passo a passo
 
 ```bash
@@ -160,24 +176,38 @@ morre no meio é corrigida rodando de novo: toda escrita sobrescreve a própria 
 | `ingest_kev.sh` | `kev-ingest.json` |
 | `ingest_epss.sh` | `epss-ingest.json`, `load-history.jsonl` |
 | `build_refined.sh` | `refined-build.json`, `load-history.jsonl` |
-| `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv` |
+| `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv`, `epss-sample-stability.csv` |
 | `check_idempotency.sh` | `idempotency-check.json` |
 | `check_access.sh` | `access-matrix.json` |
-| `run_all.sh` | `verifica-output.txt` |
+| `deploy.sh` | `apply-check.json` (recursos criados/alterados/destruídos, como a Terraform reporta) |
+| `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
+| `destroy.sh` | `destroy-check.json` (recursos destruídos, conferência de órfãos) |
+
+Todo JSON leva o `run_id` da execução que o gravou, e o `query-cost.json` registra também o
+sha256 de cada CSV de resultado.
 
 ---
 
 ## Verificação
 
 ```bash
-verificacao/verifica.sh                 # Parte 2: repositório + recursos na AWS
-verificacao/verifica.sh --repo-only     # apenas critérios estáticos, sem AWS
-verificacao/verifica.sh --parte 1       # os critérios da Parte 1 (AV1), como avaliados
+verificacao/verifica.sh                    # Parte 2: repositório + medido na conta AWS
+verificacao/verifica.sh --repo-only        # apenas critérios estáticos, sem AWS
+verificacao/verifica.sh --parte 1          # os critérios da Parte 1 (AV1), como avaliados
+verificacao/verifica.sh --region us-east-1 # onde está o lake (padrão: aws_region declarada em parte-N/variables.tf)
 ```
 
-Imprime `PASSA`/`FALHA` por critério e só sai com `0` se todos passarem. A Parte 2 acrescenta as
-três camadas, Parquet e partições, a meta de custo, o backfill, a idempotência e os grants do Lake
-Formation conferidos perfil a perfil.
+Imprime `PASSA`/`FALHA` por critério e só sai com `0` se todos passarem. Toda chamada à AWS informa
+a região explicitamente: a região padrão de quem roda nunca decide onde o lake é procurado.
+
+- **Seção 3** confere as evidências versionadas: uma única execução, citada pelo `DECISOES.md` e
+  pelas apresentações (bytes, IDs, o gráfico da resposta linha a linha, a tabela da decisão 25, o
+  resultado do aceite). Com `--repo-only`, exige também o destroy dessa execução,
+  `destroy-check.json`, sem órfãos.
+- **Seção 5** mede na conta, na hora, com o SQL que a Terraform publicou: os bytes que a pergunta
+  de negócio lê contra a meta gravada na tag do WorkGroup, a mesma resposta na raw, na trusted e na
+  refined, zero chave duplicada em toda tabela e cada perfil assumido e testado em cada camada.
+  São cerca de uma dúzia de consultas pequenas no Athena, bem abaixo de um centavo de dólar.
 
 ---
 
@@ -210,6 +240,7 @@ scripts/part-2/
   run_pipeline.sh                                  backfill ou incremental, de ponta a ponta
   run_query.sh                                     pergunta de negócio + custo medido
   check_idempotency.sh check_access.sh             provas
+  check_evidence_sync.sh verify_run.sh             uma execução, citada em tudo; aceite final
   profile_sources.sh                               medições offline das fontes (DuckDB)
 verificacao/                verifica.sh (entrada) + critérios part-1.sh / part-2.sh
 DECISOES.md / DECISIONS.md  decisões de engenharia com números medidos (PT avaliada / EN)

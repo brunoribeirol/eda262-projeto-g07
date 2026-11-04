@@ -15,10 +15,12 @@ vulnerabilities to be exploited over a 30-day window — and what does answering
 
 > **Status.** Part 1 (AV1) was submitted and presented on 2026-10-05 — signed tag
 > [`av1-entrega`](https://github.com/brunoribeirol/eda262-projeto-g07/tree/av1-entrega).
-> Part 2 (AV2, due 2026-11-30) is implemented in `parte-2/` and `scripts/part-2/`. First AWS run on
-> 2026-10-20: cost target met (162,943 B scanned, USD 0.00004768), identical answers on the three
-> layers, idempotency and the 9-cell access matrix proven. The lake stays up for daily incremental
-> loads until the presentation; only the final teardown remains to be measured.
+> Part 2 (AV2, due 2026-11-30) is implemented in `parte-2/` and `scripts/part-2/`. Reference run
+> `20261102T051658Z` (us-east-1, EPSS window 2026-10-01 to 2026-10-30): 74 resources applied from
+> scratch, cost target met (164,258 B scanned against 491,520 B, USD 0.00004768), identical answers
+> on the three layers, idempotency and the 9-cell access matrix proven, acceptance 44/44, teardown
+> of the same 74 resources with 0 orphans. Every figure in the decisions and the decks comes from
+> that run.
 
 > **A note on language.** Code, identifiers, comments and documentation are in English.
 > Five names stay in Portuguese because the course guide defines them as the evaluator-facing
@@ -30,7 +32,7 @@ vulnerabilities to be exploited over a 30-day window — and what does answering
 ## Part 2 architecture
 
 ```
-  CISA KEV (JSON, ~weekly)          FIRST EPSS (gzip CSV, daily, ~384k CVEs)
+  CISA KEV (JSON, ~weekly)          FIRST EPSS (gzip CSV, daily, ~389k CVEs)
           │                                   │
           │ ingest_kev.sh                     │ ingest_epss.sh   (backfill or incremental)
           ▼                                   ▼
@@ -113,6 +115,21 @@ answers the question with its measured cost, proves idempotency and the access m
 the acceptance script — writing every piece of evidence to `docs/evidence/part-2/`. It confirms
 before creating anything. Add `--destroy-after` to tear everything down at the end.
 
+**One run, one set of evidence.** `run_all.sh` first deletes the previous run's evidence, then
+stamps every file it writes with the same `run_id` and records the run (id, git commit, region,
+window, `verifica.sh` result) in `run-manifest.json`. The run the documents cite (the reference
+run) follows a fixed order:
+
+```bash
+scripts/part-2/destroy.sh                        # empty lake: the apply must start from scratch
+scripts/part-2/run_all.sh --yes --to YYYY-MM-DD  # pin the window's last EPSS day
+scripts/part-2/check_evidence_sync.sh            # update DECISOES.md, DECISIONS.md and the decks
+                                                 #   until it reports nothing missing
+scripts/part-2/verify_run.sh                     # final acceptance, lake still up
+scripts/part-2/destroy.sh                        # closes the run: destroy-check.json
+verificacao/verifica.sh --parte 2 --repo-only    # delivery check, lake gone
+```
+
 ### Or step by step
 
 ```bash
@@ -157,24 +174,37 @@ line to `docs/evidence/part-2/load-history.jsonl`.
 | `ingest_kev.sh` | `kev-ingest.json` |
 | `ingest_epss.sh` | `epss-ingest.json`, `load-history.jsonl` |
 | `build_refined.sh` | `refined-build.json`, `load-history.jsonl` |
-| `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv` |
+| `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv`, `epss-sample-stability.csv` |
 | `check_idempotency.sh` | `idempotency-check.json` |
 | `check_access.sh` | `access-matrix.json` |
-| `run_all.sh` | `verifica-output.txt` |
+| `deploy.sh` | `apply-check.json` (resources added/changed/destroyed, as Terraform reports them) |
+| `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
+| `destroy.sh` | `destroy-check.json` (resources destroyed, orphan check) |
+
+Every JSON carries the `run_id` of the run that wrote it; `query-cost.json` also records the
+sha256 of each result CSV.
 
 ---
 
 ## Verification
 
 ```bash
-verificacao/verifica.sh                 # Part 2: repository + AWS resources
-verificacao/verifica.sh --repo-only     # static criteria only, no AWS
-verificacao/verifica.sh --parte 1       # the Part 1 (AV1) criteria, as graded
+verificacao/verifica.sh                    # Part 2: repository + measured in the AWS account
+verificacao/verifica.sh --repo-only        # static criteria only, no AWS
+verificacao/verifica.sh --parte 1          # the Part 1 (AV1) criteria, as graded
+verificacao/verifica.sh --region us-east-1 # where the lake is (default: aws_region declared in parte-N/variables.tf)
 ```
 
-Prints `PASSA`/`FALHA` per criterion and exits `0` only if all of them pass. Part 2 adds three
-layers, Parquet and partitions, the cost target, backfill, idempotency, and the Lake Formation
-grants checked persona by persona.
+Prints `PASSA`/`FALHA` per criterion and exits `0` only if all of them pass. Every AWS call names
+the region explicitly, so the runner's default region never decides where the lake is looked for.
+
+- **Section 3** checks the committed evidence: one run, cited by `DECISOES.md` and the decks
+  (bytes, ids, the answer chart row by row, the decision 25 table, the acceptance result). With
+  `--repo-only` it also requires that run's teardown, `destroy-check.json`, with no orphans.
+- **Section 5** measures in the account, right now, with the SQL Terraform published: bytes the
+  business question scans against the target tagged on the WorkGroup, the same answer from raw,
+  trusted and refined, zero duplicate keys in every table, and each persona role assumed and
+  tried on each layer. About a dozen small Athena queries, well under one US cent.
 
 ---
 
@@ -207,6 +237,7 @@ scripts/part-2/
   run_pipeline.sh                                  backfill or incremental, end to end
   run_query.sh                                     business question + measured cost
   check_idempotency.sh check_access.sh             proofs
+  check_evidence_sync.sh verify_run.sh             one run, cited everywhere; final acceptance
   profile_sources.sh                               offline source measurements (DuckDB)
 verificacao/                verifica.sh (entry point) + part-1.sh / part-2.sh criteria
 DECISOES.md / DECISIONS.md  engineering decisions with measured numbers (PT graded / EN)

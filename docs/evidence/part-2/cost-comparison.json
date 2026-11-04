@@ -1,62 +1,63 @@
 {
+  "run_id": "20261102T051658Z",
   "window": {
-    "first_day": "2026-09-21",
-    "last_day": "2026-10-20"
+    "first_day": "2026-10-01",
+    "last_day": "2026-10-30"
   },
   "results_identical_across_layers": true,
   "business_question": {
     "raw": {
-      "execution_id": "10907220-5ccb-49ce-8d79-ffba05cb4e06",
-      "data_scanned_bytes": 82325456,
-      "engine_execution_ms": 4554,
-      "total_execution_ms": 4770,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/10907220-5ccb-49ce-8d79-ffba05cb4e06.csv",
-      "billed_bytes": 82325456,
-      "cost_usd": "0.00037437"
+      "execution_id": "3f233f44-49eb-499c-85cd-415a853333cb",
+      "data_scanned_bytes": 83441797,
+      "engine_execution_ms": 4363,
+      "total_execution_ms": 4843,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/3f233f44-49eb-499c-85cd-415a853333cb.csv",
+      "billed_bytes": 83441797,
+      "cost_usd": "0.00037945"
     },
     "trusted": {
-      "execution_id": "7f0da0fb-9797-4e85-9183-d526eaac3a4d",
-      "data_scanned_bytes": 56913236,
-      "engine_execution_ms": 4824,
-      "total_execution_ms": 4992,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/7f0da0fb-9797-4e85-9183-d526eaac3a4d.csv",
-      "billed_bytes": 56913236,
-      "cost_usd": "0.00025881"
+      "execution_id": "e3af6d87-ce36-4e14-8a36-7f7ce4e14beb",
+      "data_scanned_bytes": 57851669,
+      "engine_execution_ms": 3421,
+      "total_execution_ms": 3646,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/e3af6d87-ce36-4e14-8a36-7f7ce4e14beb.csv",
+      "billed_bytes": 57851669,
+      "cost_usd": "0.00026308"
     },
     "refined": {
-      "execution_id": "2abef452-dbe9-4627-94b7-bb9c6ba3cf23",
-      "data_scanned_bytes": 162943,
-      "engine_execution_ms": 1714,
-      "total_execution_ms": 2169,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/2abef452-dbe9-4627-94b7-bb9c6ba3cf23.csv",
+      "execution_id": "754fe773-ddd2-459e-b6e7-8ee5ba8194a7",
+      "data_scanned_bytes": 164258,
+      "engine_execution_ms": 1023,
+      "total_execution_ms": 1211,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/754fe773-ddd2-459e-b6e7-8ee5ba8194a7.csv",
       "billed_bytes": 10485760,
       "cost_usd": "0.00004768"
     }
   },
   "scanned_bytes_ratio": {
-    "raw_over_refined": 505.2408265467065,
-    "raw_over_trusted": 1.4465080846922849,
-    "trusted_over_refined": 349.2830989978091
+    "raw_over_refined": 507.99228652485726,
+    "raw_over_trusted": 1.4423403584086745,
+    "trusted_over_refined": 352.20000852317696
   },
   "partition_pruning": {
     "one_day": {
-      "execution_id": "bcc13552-5299-457f-a5d3-13b5108332b2",
-      "data_scanned_bytes": 779638,
-      "engine_execution_ms": 919,
-      "total_execution_ms": 1100,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/bcc13552-5299-457f-a5d3-13b5108332b2.csv",
+      "execution_id": "675e48e6-c2d8-417a-806a-f7221d5b0e6e",
+      "data_scanned_bytes": 789155,
+      "engine_execution_ms": 1132,
+      "total_execution_ms": 1279,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/675e48e6-c2d8-417a-806a-f7221d5b0e6e.csv",
       "billed_bytes": 10485760,
       "cost_usd": "0.00004768"
     },
     "whole_window": {
-      "execution_id": "1c9da5fb-7e53-4c06-8cc1-76c6f343e62c",
-      "data_scanned_bytes": 22606275,
-      "engine_execution_ms": 1574,
-      "total_execution_ms": 1786,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/1c9da5fb-7e53-4c06-8cc1-76c6f343e62c.csv",
-      "billed_bytes": 22606275,
-      "cost_usd": "0.00010280"
+      "execution_id": "50eaa4d5-54fd-4bd6-827d-90cc71546440",
+      "data_scanned_bytes": 23094812,
+      "engine_execution_ms": 1400,
+      "total_execution_ms": 1541,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/50eaa4d5-54fd-4bd6-827d-90cc71546440.csv",
+      "billed_bytes": 23094812,
+      "cost_usd": "0.00010502"
     },
-    "whole_window_over_one_day": 28.995860899545686
+    "whole_window_over_one_day": 29.26524193599483
   }
 }
