@@ -7,6 +7,10 @@
 # Optional tooling: nothing in the pipeline depends on this script or on DuckDB.
 #
 # Usage: scripts/part-2/profile_sources.sh [--days 30] [--to yyyy-MM-dd] [--cache-dir DIR]
+#                                         [--kev-file FILE]
+#   --kev-file  profile this KEV catalog instead of downloading the current one -- e.g. the
+#               catalog a reference run archived in raw (kev_catalog/catalog_date=D/), so the
+#               source numbers describe the same catalog as the AWS numbers.
 
 set -euo pipefail
 
@@ -16,13 +20,15 @@ KEV_URL="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerab
 DAYS=30
 TO=""
 CACHE_DIR="${TMPDIR:-/tmp}/eda262-g07-sources"
+KEV_FILE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --days)      DAYS="${2:?}"; shift 2 ;;
     --to)        TO="${2:?}"; shift 2 ;;
     --cache-dir) CACHE_DIR="${2:?}"; shift 2 ;;
-    -h|--help)   sed -n '2,9p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    --kev-file)  KEV_FILE="${2:?}"; shift 2 ;;
+    -h|--help)   sed -n '2,13p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -55,11 +61,17 @@ while [[ ! "${d}" > "${TO}" ]]; do
 done
 echo "==> gzip bytes for the window: ${WINDOW_BYTES}"
 
-echo "==> KEV catalog"
-curl -fsSL --retry 3 --max-time 120 -o "${CACHE_DIR}/known_exploited_vulnerabilities.json" "${KEV_URL}"
+if [[ -n "${KEV_FILE}" ]]; then
+  [[ -s "${KEV_FILE}" ]] || { echo "KEV file not found or empty: ${KEV_FILE}" >&2; exit 1; }
+  echo "==> KEV catalog: ${KEV_FILE} (pinned)"
+else
+  KEV_FILE="${CACHE_DIR}/known_exploited_vulnerabilities.json"
+  echo "==> KEV catalog: current CISA feed"
+  curl -fsSL --retry 3 --max-time 120 -o "${KEV_FILE}" "${KEV_URL}"
+fi
 
 sed -e "s#\${epss_glob}#${CACHE_DIR}/epss/epss_scores-*.csv.gz#g" \
-    -e "s#\${kev_file}#${CACHE_DIR}/known_exploited_vulnerabilities.json#g" \
+    -e "s#\${kev_file}#${KEV_FILE}#g" \
     -e "s#\${out_dir}#${CACHE_DIR}/out#g" \
     -e "s#\${first_day}#${FIRST}#g" \
     -e "s#\${latest_day}#${TO}#g" \
