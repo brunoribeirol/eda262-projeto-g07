@@ -16,23 +16,23 @@ to one must be mirrored in the other. The Part 2 stylesheet is the Part 1 one pl
 
 ## Part 2 deck — structure
 
-Nine slides for the five-minute hard cutoff (~33 s each). The HTML comment above every slide names
+Eight slides for the five-minute hard cutoff (~37 s each). The HTML comment above every slide names
 its presenter, so each member defends at least one decision (the guide's individual defense):
 
 | # | Slide | Presenter | Guide item |
 |---|---|---|---|
 | 1 | Cover: the business question as the title | Bruno | Scenario |
-| 2 | Why EPSS: Part 1 sat below the 10 MB billing floor; 80.9 MB in 30 days | Bruno | Scenario and question |
-| 3 | Architecture: collect → raw → trusted → refined, 73 resources | Emanuel | Architecture |
-| 4 | Partitioning (29×) and idempotency (391,915 → 391,915) | Igor · Leonardo | Decisions |
-| 5 | Lake Formation: 3×3 matrix, 9 of 9 measured | Emanuel | Layers + access |
-| 6 | The answer: Microsoft leads volume, Ivanti leads probability (0.82) | Victor | Question answered |
-| 7 | Cost target met: 162,943 B, US$ 0.00004768, raw vs trusted vs refined | Vinícius | Measured cost |
-| 8 | Demo: real terminal output of the 2026-10-20 run | Vinícius | Demo |
-| 9 | Every decision with its number, product angle | Bruno | Decisions |
+| 2 | Why EPSS: Part 1 sat below the 10 MB billing floor; 82.0 MB in 30 days | Bruno | Scenario and question |
+| 3 | Architecture: collect → raw → trusted → refined, 74 resources | Emanuel | Architecture |
+| 4 | Lake Formation: 3×3 matrix, 9 of 9 measured | Emanuel | Layers + access |
+| 5 | Partitioning (29×) and idempotency (398,142 → 398,142) | Igor · Leonardo | Decisions |
+| 6 | The answer: Microsoft leads volume, Ivanti leads probability (0.82 vs Apple 0.14) | Victor | Question answered |
+| 7 | Cost target in bytes: 164,258 B against 491,520 B, raw vs trusted vs refined | Vinícius | Measured cost |
+| 8 | Demo: real terminal output of the reference run (apply, backfill, query on three layers, acceptance + destroy) | Vinícius | Demo |
 
-Every figure comes from the AWS run of **2026-10-20** recorded in `docs/evidence/part-2/` and in
-`DECISOES.md` (decisions 11–24). Slide 8 shows the exact terminal lines of that run (only wrapped
+Every figure comes from the reference run **`20261102T051658Z`** recorded in
+`docs/evidence/part-2/` and in `DECISOES.md` (decisions 11–26); `scripts/part-2/check_evidence_sync.sh`
+compares the numbers it tracks on both decks with that evidence. Slide 8 shows the exact terminal lines of that run (only wrapped
 to fit); the line that prints the Lake Formation administrator ARN is left out because it contains
 the AWS account ID — the same reason the AV1 destroy capture was cropped.
 
@@ -75,22 +75,17 @@ graphics"** — otherwise the orange bars and accent rules disappear. The page b
 
 - **Part 1:** presented and submitted on 2026-10-05; delivered deck `apresentacao-parte-1-g07.pdf`
   at the signed tag `av1-entrega`.
-- **Part 2:** due 2026-11-30 (Aula 30). Deck drafted on 2026-10-20 from the first AWS run.
+- **Part 2:** due 2026-12-02 (moved from 2026-11-30, Aula 30, by the professor in class on
+  2026-11-17). Every number on the deck comes from the reference run `20261102T051658Z`, which
+  closed with `verify_run.sh` 44/0 and `destroy.sh` 74 destroyed, 0 orphans.
 - Talk tracks (`speaker-notes*.pt-BR.md`) are gitignored on purpose and live only locally.
 
 ## Before presenting Part 2
 
-- [ ] Run the incremental loads until close to the date, then refresh the numbers that move with
-      the data (slides 2, 4, 6, 7, 8) from `docs/evidence/part-2/` — or keep the 2026-10-20 run and
-      say so on the slide, as AV1 did.
-- [ ] Final cycle, in this order (the AWS criteria need the resources to exist, decision 24 needs a
-      destroy to have happened):
-      1. `scripts/part-2/destroy.sh` — tears down the long-running lake; fill decision 24 in
-         `DECISOES.md` with its orphan check.
-      2. `scripts/part-2/run_all.sh --days 30` — apply **from zero**, load, query, proofs, verifica:
-         now **39 PASSA** (PDF rendered, no unmeasured number left).
-      3. `scripts/part-2/destroy.sh` again — the recorded "destroy with 0 orphans" for the demo.
-      Capture apply / query / verifica / destroy (screenshots or terminal text) for slide 8.
-- [ ] Render with `scripts/build_pdf.sh` and confirm 9 pages each.
+- [x] Reference run, in this order: destroy -> `run_all.sh --yes --days 30 --to 2026-10-30` (apply
+      from zero) -> documents updated -> `verify_run.sh` 44/0 -> `destroy.sh` 0 orphans
+      (2026-11-02 to 2026-11-04). Re-running `run_all.sh` replaces every per-run evidence file
+      with a new run id, so it is only done again on purpose, followed by the same document pass.
+- [x] Render with `scripts/build_pdf.sh` and confirm 8 pages each.
 - [ ] Rehearse with a timer: five minutes is a hard cutoff; each member should be able to defend
       any decision in `DECISOES.md` (the professor picks one at random).

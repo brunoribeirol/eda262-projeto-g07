@@ -9,7 +9,8 @@ authoritative if anything here is ambiguous or out of date.
 - 100% of the grade is one incremental group project, graded in two parts with the same rubric each time:
   `(AV1 + AV2) / 2`. Each part is worth 10 points.
 - **AV1 (Part 1) due: Aula 16, 2026-09-30.**
-- **AV2 (Part 2) due: Aula 30, 2026-11-30.**
+- **AV2 (Part 2) due: Aula 30, 2026-11-30** in the PDF; moved to **2026-12-02** by the professor in
+  class on 2026-11-17 (announced orally, not in the PDF).
 - **Scenario validation deadline with the professor: Aula 13, 2026-09-21** (business domain + one clear
   analytical question over batch-processable, high-volume events, with plausible dirty data raw→trusted).
 - Group is up to 6 people; one representative submits everything (repo link + presentation PDF) via Google

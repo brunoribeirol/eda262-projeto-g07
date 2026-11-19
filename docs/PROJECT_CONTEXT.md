@@ -3,10 +3,11 @@
 ## Status
 - **Part 1 (AV1):** submitted and presented on 2026-10-05; the delivered state is the signed tag
   `av1-entrega`.
-- **Part 2 (AV2, due 2026-11-30):** implemented and first run on AWS on 2026-10-20 (`verifica.sh`
-  37/39 on that run; the deck PDF is now committed, leaving only the final teardown, decision 24).
-  Open as draft PR #1 (`feat/part-2-data-lake` → `main`). The lake stays up for daily incremental
-  loads until the final cycle (destroy → apply from zero → destroy) right before delivery.
+- **Part 2 (AV2, due 2026-12-02, moved from 2026-11-30 by the professor):** implemented and
+  closed by the reference run `20261102T051658Z` (2026-11-02 to 2026-11-04): apply of 74 resources
+  from zero, `verify_run.sh` 44/0, `destroy.sh` 74 destroyed with 0 orphans. The lake is torn
+  down. Open as draft PR #1 (`feat/part-2-data-lake` → `main`); merge and the signed tag
+  `av2-entrega` close the delivery.
 
 ## Purpose
 EDA262 (CESAR School) group project for group g07: an AWS data lake over public vulnerability data,
@@ -39,8 +40,9 @@ Part 1 (still on `main`, unchanged): raw KEV JSON → trusted NDJSON → one Glu
   `profile_sources.sh` (offline DuckDB measurements). Shared helpers in `scripts/part-2/lib.sh`.
 - `parte-1/`, `scripts/*.sh` — Part 1 as delivered.
 - `verificacao/verifica.sh` — acceptance script (`--parte 1|2`, default 2) over `verificacao/part-1.sh`
-  (25 criteria) and `verificacao/part-2.sh` (39 criteria); prints PASSA/FALHA.
-- `DECISOES.md` — engineering decisions with measured numbers (1–10 Part 1, 11–24 Part 2), at repo
+  (25 criteria) and `verificacao/part-2.sh` (44 criteria with AWS, 26 with `--repo-only`); prints
+  PASSA/FALHA.
+- `DECISOES.md` — engineering decisions with measured numbers (1–10 Part 1, 11–26 Part 2), at repo
   root; `DECISIONS.md` mirrors it in English. The Portuguese file is the graded copy.
 - `docs/presentation/` — decks for both parts (PT graded + EN, byte-identical stylesheet per part);
   `scripts/build_pdf.sh` renders them.

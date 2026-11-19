@@ -537,7 +537,24 @@ scripts/part-2/run_all.sh --yes --days 30 --to YYYY-MM-DD   # reference run: dec
 ```
 
 One mark per layer means a run that died between trusted and refined is caught up by the next
-run without re-processing trusted. Every load appends a line to
+run without re-processing trusted.
+
+**Late data: a 0-day lateness window, backfill on demand.** In EPSS the event time is the
+`score_date` declared inside the file. Raw keeps each file under the day in its name, and trusted
+accepts a row only when the two dates match.
+
+| Evidence | Value |
+|---|---|
+| Rows whose `score_date` differs from the file's day, over the 30 days (measured on AWS: source rows - trusted rows) | **0** of 11,684,958 |
+| Partitions rewritten to recover a day that arrived late | **1** per layer (`ingest_epss.sh --from D --to D`, then `build_refined.sh --date D`) |
+
+EPSS publishes one whole file per day, and no row arrives after its day, so the largest measured
+lateness is 0 and so is the window. A day published late arrives whole and shows up as a gap behind
+the mark; the incremental load warns and prints the backfill command, which rewrites only that
+partition. An N-day window would rewrite N + 1 partitions on every run to cover a lateness the
+source does not have.
+
+Every load appends a line to
 `docs/evidence/part-2/load-history.jsonl`, so the lake's growth up to the presentation is on
 record.
 
@@ -648,7 +665,7 @@ lake's newest partition as the last day, and the reference run pins that day wit
 |---|---|
 | CVEs added to KEV in the 12 months up to 2026-10-30, the window's last day | **313** |
 | The same count with `current_date` on 2026-11-10 | **310**, on the same catalog |
-| The same count with `current_date` on 2026-11-30, the delivery day | **302**: 11 CVEs leave the window with no change in the data |
+| The same count with `current_date` on 2026-11-30, the original delivery date | **302**: 11 CVEs leave the window with no change in the data |
 
 **Why:** with `current_date`, the same query over the same data answers differently depending on
 the day it runs, and no run can be reproduced. The Part 1 query used

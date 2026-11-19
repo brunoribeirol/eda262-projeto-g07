@@ -597,6 +597,21 @@ scripts/part-2/run_all.sh --yes --days 30 --to AAAA-MM-DD   # execução de refe
 **Por que uma marca por camada:** se uma execução morrer entre a trusted e a refined, a próxima
 execução constrói na refined os dias que faltam, sem reprocessar a trusted.
 
+**Dado atrasado: janela de atraso de 0 dias, backfill sob demanda.** No EPSS, o tempo do evento é
+a `score_date` declarada dentro do arquivo. A raw guarda cada arquivo na partição do dia que está
+no nome dele, e a trusted só aceita a linha se as duas datas forem iguais.
+
+| Evidência | Valor |
+|---|---|
+| Linhas com `score_date` diferente do dia do arquivo, nos 30 dias (medido na AWS: linhas da fonte − linhas na trusted) | **0** de 11.684.958 |
+| Partições reescritas para recuperar um dia que chegou atrasado | **1** por camada (`ingest_epss.sh --from D --to D`, depois `build_refined.sh --date D`) |
+
+**Por quê:** o EPSS publica um arquivo inteiro por dia, e nenhuma linha chega depois do dia dela.
+Por isso o maior atraso medido é 0, e a janela é 0. Um dia publicado com atraso chega inteiro e
+fica como buraco atrás da marca. A carga incremental avisa e mostra o comando de backfill, que
+reescreve só aquela partição. Uma janela de N dias reescreveria N + 1 partições em toda execução
+para cobrir um atraso que a fonte não tem.
+
 **Histórico:** cada carga acrescenta uma linha a `docs/evidence/part-2/load-history.jsonl`. O
 crescimento do lake até a apresentação fica registrado execução a execução.
 
@@ -733,7 +748,7 @@ esse dia com `run_all.sh --to`.
 |---|---|
 | CVEs adicionadas ao KEV nos 12 meses até 2026-10-30, o último dia da janela | **313** |
 | A mesma contagem com `current_date` em 2026-11-10 | **310**, sobre o mesmo catálogo |
-| A mesma contagem com `current_date` em 2026-11-30, o dia da entrega | **302**: 11 CVEs saem da janela sem nenhuma mudança nos dados |
+| A mesma contagem com `current_date` em 2026-11-30, a data original da entrega | **302**: 11 CVEs saem da janela sem nenhuma mudança nos dados |
 
 **Por quê:** com `current_date`, a mesma consulta sobre os mesmos dados muda de resposta conforme o
 dia em que roda, e nenhuma execução pode ser refeita. A consulta da Parte 1 usava
