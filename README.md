@@ -177,7 +177,7 @@ line to `docs/evidence/part-2/load-history.jsonl`.
 | `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv`, `epss-sample-stability.csv` |
 | `check_idempotency.sh` | `idempotency-check.json` |
 | `check_access.sh` | `access-matrix.json` |
-| `deploy.sh` | `apply-check.json` (resources added/changed/destroyed, as Terraform reports them) |
+| `deploy.sh` | `apply-check.json` (resources added/changed/destroyed, as Terraform reports them, and whether a plan right after the apply is empty) |
 | `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
 | `destroy.sh` | `destroy-check.json` (resources destroyed, orphan check) |
 

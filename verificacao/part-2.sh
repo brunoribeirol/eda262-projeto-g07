@@ -135,6 +135,15 @@ p2_access_matrix_proven() {
   [[ -f "${f}" ]] && jq -e '.all_match == true and .checks >= 9' "${f}"
 }
 
+# deploy.sh plans again right after the apply: an empty plan means the code describes exactly
+# what exists, with no resource that would change on every apply (a perpetual diff).
+p2_plan_clean_after_apply() {
+  local f="${EVIDENCE}/apply-check.json"
+  [[ -f "${f}" ]] || return 1
+  CRITERION_DETAIL="$(jq -r '.plan_after_apply // "plano depois do apply nao registrado"' "${f}")"
+  jq -e '.plan_after_apply_clean == true' "${f}"
+}
+
 # --- AWS --------------------------------------------------------------------------------
 
 p2_bucket_exists()    { aws_cli s3api head-bucket --bucket "$1"; }
@@ -426,6 +435,7 @@ run_part_2() {
   criterion "Ingestao idempotente comprovada (recarga sem duplicar)"  p2_idempotency_proven
   criterion "Matriz de acesso por camada comprovada (Lake Formation)" p2_access_matrix_proven
   criterion "Resultado da consulta de negocio salvo"                  test -f "${EVIDENCE}/business-question-result.csv"
+  criterion "Plano sem mudancas logo depois do apply (sem drift)"     p2_plan_clean_after_apply
 
   if [[ "${REPO_ONLY}" -eq 1 ]]; then
     criterion "Destroy da mesma execucao registrado, sem recursos orfaos" p2_destroy_recorded

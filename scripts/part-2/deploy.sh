@@ -9,8 +9,9 @@
 # exactly as it was found.
 #
 # Evidence: docs/evidence/part-2/apply-check.json -- what this apply created, changed and
-# destroyed, as Terraform itself reports it. On a reference run (lake destroyed first) it
-# is the "apply from scratch" the demo slide shows.
+# destroyed, as Terraform itself reports it, and whether a plan right after it is empty (no
+# perpetual diff). On a reference run (lake destroyed first) it is the "apply from scratch"
+# the demo slide shows.
 #
 # Usage: scripts/part-2/deploy.sh [--profile NAME] [--region REGION] [--workspace NAME] [--plan-only]
 
@@ -79,10 +80,28 @@ rm -f "${APPLY_LOG}"
 [[ -n "${APPLY_COUNTS}" ]] || die "terraform apply did not report 'Apply complete!'"
 read -r ADDED CHANGED DESTROYED <<< "${APPLY_COUNTS}"
 
+# Plan again right after the apply: exit code 0 means the code and the account agree, 2 means
+# some resource would change on every apply (a perpetual diff, i.e. drift by design). Recorded,
+# not fatal, so the run still produces its evidence; verifica.sh turns it into a criterion.
+log "Planning again: an apply must leave nothing to change"
+PLAN_LOG="$(mktemp)"
+PLAN_EXIT=0
+terraform -chdir="${TF_DIR}" plan -input=false -detailed-exitcode "${TF_VARS[@]}" > "${PLAN_LOG}" 2>&1 \
+  || PLAN_EXIT=$?
+PLAN_SUMMARY="$(grep -E '^(Plan:|No changes\.)' "${PLAN_LOG}" | tail -n 1 || true)"
+case "${PLAN_EXIT}" in
+  0) ok "Plan after apply   : ${PLAN_SUMMARY:-No changes.}" ;;
+  2) warn "Plan after apply   : ${PLAN_SUMMARY} -- these resources drift on every apply:"
+     grep -E '^  # .* (will|must) be' "${PLAN_LOG}" >&2 || true ;;
+  *) cat "${PLAN_LOG}" >&2; rm -f "${PLAN_LOG}"; die "terraform plan failed right after the apply" ;;
+esac
+rm -f "${PLAN_LOG}"
+
 mkdir -p "${EVIDENCE_DIR}"
 jq -n --arg run_id "${RUN_ID}" --arg applied_at "$(now_utc_iso)" --arg region "${REGION}" \
   --arg workspace "${WORKSPACE}" --argjson added "${ADDED}" --argjson changed "${CHANGED}" \
   --argjson destroyed "${DESTROYED}" --argjson before "${STATE_BEFORE}" \
+  --argjson plan_exit "${PLAN_EXIT}" --arg plan_summary "${PLAN_SUMMARY}" \
   '{
      run_id: $run_id,
      applied_at_utc: $applied_at,
@@ -92,7 +111,9 @@ jq -n --arg run_id "${RUN_ID}" --arg applied_at "$(now_utc_iso)" --arg region "$
      resources_changed: $changed,
      resources_destroyed: $destroyed,
      resources_in_state_before: $before,
-     from_scratch: ($before == 0 and $added > 0)
+     from_scratch: ($before == 0 and $added > 0),
+     plan_after_apply_clean: ($plan_exit == 0),
+     plan_after_apply: $plan_summary
    }' > "${EVIDENCE_DIR}/apply-check.json"
 
 echo

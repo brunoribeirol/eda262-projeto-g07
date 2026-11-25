@@ -179,7 +179,7 @@ morre no meio é corrigida rodando de novo: toda escrita sobrescreve a própria 
 | `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv`, `epss-sample-stability.csv` |
 | `check_idempotency.sh` | `idempotency-check.json` |
 | `check_access.sh` | `access-matrix.json` |
-| `deploy.sh` | `apply-check.json` (recursos criados/alterados/destruídos, como a Terraform reporta) |
+| `deploy.sh` | `apply-check.json` (recursos criados/alterados/destruídos, como a Terraform reporta, e se um plan logo depois do apply sai vazio) |
 | `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
 | `destroy.sh` | `destroy-check.json` (recursos destruídos, conferência de órfãos) |
 
