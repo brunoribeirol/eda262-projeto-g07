@@ -75,8 +75,8 @@ graphics"** — otherwise the orange bars and accent rules disappear. The page b
 
 - **Part 1:** presented and submitted on 2026-10-05; delivered deck `apresentacao-parte-1-g07.pdf`
   at the signed tag `av1-entrega`.
-- **Part 2:** due 2026-12-02 (moved from 2026-11-30, Aula 30, by the professor in class on
-  2026-11-17). Every number on the deck comes from the reference run `20261102T051658Z`, which
+- **Part 2:** delivered and presented on 2026-12-02 (moved from 2026-11-30, Aula 30, by the
+  professor in class on 2026-11-17). Every number on the deck comes from the reference run `20261102T051658Z`, which
   closed with `verify_run.sh` 44/0 and `destroy.sh` 74 destroyed, 0 orphans.
 - Talk tracks (`speaker-notes*.pt-BR.md`) are gitignored on purpose and live only locally.
 
