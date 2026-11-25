@@ -135,6 +135,15 @@ p2_access_matrix_proven() {
   [[ -f "${f}" ]] && jq -e '.all_match == true and .checks >= 9' "${f}"
 }
 
+# check_access.sh also lists every layer bucket straight from S3 as each persona: all must be
+# denied, because data reaches a persona only through Athena and Lake Formation.
+p2_s3_direct_denied_proven() {
+  local f="${EVIDENCE}/access-matrix.json"
+  [[ -f "${f}" ]] || return 1
+  CRITERION_DETAIL="$(jq -r '.s3_direct // empty | "\(.denied) de \(.checks) leituras diretas no S3 recusadas"' "${f}")"
+  jq -e '.s3_direct.all_denied == true and .s3_direct.checks >= 9' "${f}"
+}
+
 # deploy.sh plans again right after the apply: an empty plan means the code describes exactly
 # what exists, with no resource that would change on every apply (a perpetual diff).
 p2_plan_clean_after_apply() {
@@ -175,6 +184,25 @@ p2_tables_declare_grain() {
     [[ "${n}" -gt 0 ]] || return 1
     count=$(( count + n ))
   done
+  [[ "${count}" -ge 5 ]]
+}
+
+# The catalog is the contract: every table says what it answers (a description of at least 40
+# characters), who owns it, when it changes, and what every column and partition key means.
+p2_tables_carry_contract() {
+  local db count=0 n
+  for db in "${RAW_DB}" "${TRUSTED_DB}" "${REFINED_DB}"; do
+    n="$(aws_cli glue get-tables --database-name "${db}" --output json \
+          | jq -s '[.[].TableList[]] | if length > 0 and all(.[];
+                     ((.Description // "") | length) >= 40
+                     and (.Parameters.owner // "") != "" and (.Parameters.refresh // "") != ""
+                     and all((.StorageDescriptor.Columns // []) + (.PartitionKeys // []) | .[];
+                             (.Comment // "") != ""))
+                   then length else -1 end')" || return 1
+    [[ "${n}" -gt 0 ]] || return 1
+    count=$(( count + n ))
+  done
+  CRITERION_DETAIL="${count} tabelas com descricao, dono, atualizacao e comentario em toda coluna"
   [[ "${count}" -ge 5 ]]
 }
 
@@ -390,6 +418,39 @@ p2_live_access_matrix() {
   done
 }
 
+# Lists every layer bucket straight from S3 as every persona: all must be AccessDenied. The
+# operator lists the same buckets first, so a wrong bucket name cannot pass for a denial.
+p2_live_s3_direct_denied() {
+  live_prepare || return 1
+  local persona layer creds key secret token checks=0 denied=0
+  for layer in raw trusted refined; do
+    aws_cli s3api list-objects-v2 --bucket "${PREFIX}-lake-${layer}" --max-keys 1 || return 1
+  done
+  for persona in ${PERSONAS}; do
+    creds="$(aws_cli sts assume-role --role-session-name eda262-g07-verifica \
+               --role-arn "arn:${ARN_PARTITION}:iam::${ACCOUNT_ID}:role/${PREFIX}-${persona}" \
+               --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' --output text)" || return 1
+    read -r key secret token <<< "${creds}"
+    for layer in raw trusted refined; do
+      checks=$(( checks + 1 ))
+      if (
+        export AWS_ACCESS_KEY_ID="${key}" AWS_SECRET_ACCESS_KEY="${secret}" AWS_SESSION_TOKEN="${token}"
+        unset AWS_PROFILE AWS_DEFAULT_PROFILE
+        PROFILE=""
+        # Not a pipe: under pipefail the failing aws call would fail the pipeline even when
+        # grep matches. A successful listing is a read, never a denial.
+        out="$(aws_cli s3api list-objects-v2 --bucket "${PREFIX}-lake-${layer}" --max-keys 1 2>&1 >/dev/null)" \
+          && exit 1
+        grep -q '(AccessDenied)' <<< "${out}"
+      ); then
+        denied=$(( denied + 1 ))
+      fi
+    done
+  done
+  CRITERION_DETAIL="${denied} de ${checks} leituras diretas no S3 recusadas (perfil x camada)"
+  [[ "${denied}" -eq "${checks}" ]]
+}
+
 p2_tags_applied() {
   local layer out
   for layer in lake-raw lake-trusted lake-refined athena-results; do
@@ -434,6 +495,7 @@ run_part_2() {
   criterion "Backfill registrado (>= 2 particoes EPSS carregadas)"    p2_backfill_recorded
   criterion "Ingestao idempotente comprovada (recarga sem duplicar)"  p2_idempotency_proven
   criterion "Matriz de acesso por camada comprovada (Lake Formation)" p2_access_matrix_proven
+  criterion "S3 direto recusado para todo perfil (so Athena + Lake Formation)" p2_s3_direct_denied_proven
   criterion "Resultado da consulta de negocio salvo"                  test -f "${EVIDENCE}/business-question-result.csv"
   criterion "Plano sem mudancas logo depois do apply (sem drift)"     p2_plan_clean_after_apply
 
@@ -451,6 +513,7 @@ run_part_2() {
   criterion "Bucket de resultados do Athena"                        p2_bucket_exists "${PREFIX}-athena-results"
   criterion "Bancos no Glue por camada (raw/trusted/refined)"       p2_layer_databases_exist
   criterion "Todas as tabelas declaram a granularidade no catalogo" p2_tables_declare_grain
+  criterion "Contrato no catalogo: descricao, dono, atualizacao, comentarios" p2_tables_carry_contract
   criterion "Tabelas trusted/refined em Parquet e particionadas"    p2_modeled_tables_parquet_and_partitioned
   criterion "Nenhuma tabela ou Crawler criado por Glue Crawler"     p2_no_crawler_tables
   criterion "Athena WorkGroup do pipeline (${PREFIX}-wg)"           p2_workgroup_exists "${PREFIX}-wg"
@@ -466,4 +529,5 @@ run_part_2() {
   criterion "Mesma resposta nas tres camadas (raw / trusted / refined)"         p2_live_layers_agree
   criterion "Granularidade e idempotencia: 0 chave duplicada em toda tabela"    p2_live_grain
   criterion "Cada perfil le exatamente as camadas declaradas (Lake Formation)"  p2_live_access_matrix
+  criterion "Nenhum perfil le as camadas direto no S3 (AccessDenied)"           p2_live_s3_direct_denied
 }

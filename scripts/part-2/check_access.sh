@@ -2,7 +2,8 @@
 #
 # Proves the per-layer access policy is enforced by Lake Formation: assumes every persona
 # role and tries to read every layer through Athena, then compares each outcome with the
-# matrix Terraform declared (output access_matrix).
+# matrix Terraform declared (output access_matrix). Then lists every layer bucket straight
+# from S3 as each persona: all must be denied, since S3 would bypass Lake Formation.
 #
 # A denial only counts as proof if the very same probe succeeds for some other persona --
 # otherwise a typo in the probe would look like a working permission. All personas share
@@ -19,7 +20,7 @@ PROFILE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --profile) PROFILE="${2:?--profile needs a value}"; shift 2 ;;
-    -h|--help) sed -n '2,13p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help) sed -n '2,14p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -33,8 +34,31 @@ REFINED_DB="$(tf_output refined_db)"
 PERSONAS_JSON="$(tf_output_json personas)"
 MATRIX_JSON="$(tf_output_json access_matrix)"
 
+RAW_BUCKET="$(tf_output raw_bucket)"
+TRUSTED_BUCKET="$(tf_output trusted_bucket)"
+REFINED_BUCKET="$(tf_output refined_bucket)"
+
 KEV_DATE="$(latest_partition "${TRUSTED_DB}" kev_vulnerabilities)"
 REFINED_DATE="$(latest_partition "${REFINED_DB}" vendor_exposure_daily)"
+
+# Reading a layer's bucket straight from S3 bypasses Lake Formation, so it must fail for
+# every persona: a persona reaches data only through Athena, with credentials Lake Formation
+# vends per query. The same listing must succeed as the operator, or a wrong bucket name
+# would pass for a denial. Only the error code is recorded: the full AWS message carries the
+# role ARN, and with it the account ID, which never goes into this public repository.
+layer_bucket() {
+  case "$1" in
+    raw)     printf '%s' "${RAW_BUCKET}" ;;
+    trusted) printf '%s' "${TRUSTED_BUCKET}" ;;
+    refined) printf '%s' "${REFINED_BUCKET}" ;;
+  esac
+}
+s3_probe() { aws_cli s3api list-objects-v2 --bucket "$1" --max-keys 1 --output json; }
+
+for layer in raw trusted refined; do
+  s3_probe "$(layer_bucket "${layer}")" >/dev/null 2>&1 \
+    || die "the operator cannot list the ${layer} bucket -- the S3 probe itself is broken"
+done
 
 # One cheap probe per layer, always pruned to a single partition.
 probe_db() {
@@ -62,7 +86,9 @@ WORK_DIR="$(mktemp -d)"
 # shellcheck disable=SC2064
 trap "rm -rf '${WORK_DIR}'" EXIT
 RESULTS="${WORK_DIR}/results.jsonl"
+S3_RESULTS="${WORK_DIR}/s3-results.jsonl"
 : > "${RESULTS}"
+: > "${S3_RESULTS}"
 
 PERSONA_LIST="$(jq -r 'keys[]' <<< "${PERSONAS_JSON}")"
 LAYERS="raw trusted refined"
@@ -108,6 +134,37 @@ while IFS= read -r persona; do
       '{persona: $persona, layer: $layer, expected: $expected, actual: $actual,
         match: ($expected == $actual), execution_id: $execution_id, reason: $reason}' >> "${RESULTS}"
   done
+
+  for layer in ${LAYERS}; do
+    bucket="$(layer_bucket "${layer}")"
+    s3_outcome="$(
+      export AWS_ACCESS_KEY_ID="${key}" AWS_SECRET_ACCESS_KEY="${secret}" AWS_SESSION_TOKEN="${token}"
+      unset AWS_PROFILE AWS_DEFAULT_PROFILE AWS_PROFILE_OVERRIDE
+      if err="$(s3_probe "${bucket}" 2>&1 >/dev/null)"; then
+        printf 'read\t'
+      else
+        # "An error occurred (AccessDenied) when calling ..." -> AccessDenied
+        printf 'failed\t%s' "$(sed -n 's/^[^(]*(\([A-Za-z]*\)).*/\1/p' <<< "${err}" | head -n 1)"
+      fi
+    )"
+    IFS=$'\t' read -r s3_actual error_code <<< "${s3_outcome}"
+    if [[ "${s3_actual}" == "failed" && "${error_code}" == "AccessDenied" ]]; then
+      s3_actual="denied"
+    elif [[ "${s3_actual}" == "failed" ]]; then
+      s3_actual="error"   # a failure that is not a denial proves nothing
+    fi
+
+    if [[ "${s3_actual}" == "denied" ]]; then
+      ok "  ${layer} straight from S3: denied (expected denied)"
+    else
+      warn "  ${layer} straight from S3: ${s3_actual} (expected denied) ${error_code}"
+    fi
+
+    jq -nc --arg persona "${persona}" --arg layer "${layer}" --arg actual "${s3_actual}" \
+      --arg error_code "${error_code}" \
+      '{persona: $persona, layer: $layer, expected: "denied", actual: $actual,
+        match: ($actual == "denied"), error_code: $error_code}' >> "${S3_RESULTS}"
+  done
 done <<< "${PERSONA_LIST}"
 
 # Every layer's probe must have succeeded at least once, or its denials prove nothing.
@@ -118,6 +175,7 @@ jq -s \
   --arg run_id "${RUN_ID}" \
   --arg checked_at "$(now_utc_iso)" --arg kev "${KEV_DATE}" --arg refined "${REFINED_DATE}" \
   --arg unproven "${UNPROVEN_LAYERS}" \
+  --slurpfile s3 "${S3_RESULTS}" \
   '{
      run_id: $run_id,
      checked_at_utc: $checked_at,
@@ -127,7 +185,15 @@ jq -s \
      matches: (map(select(.match)) | length),
      all_match: (all(.match) and ($unproven == "")),
      layers_without_a_successful_probe: ($unproven | split(" ") | map(select(length > 0))),
-     results: .
+     results: .,
+     s3_direct: {
+       probe: "s3api list-objects-v2 --max-keys 1 on the layer bucket, as the persona",
+       operator_control: "listed every layer bucket",
+       checks: ($s3 | length),
+       denied: ($s3 | map(select(.match)) | length),
+       all_denied: (($s3 | length) > 0 and ($s3 | all(.match))),
+       results: $s3
+     }
    }' "${RESULTS}" > "${EVIDENCE_DIR}/access-matrix.json"
 
 echo
@@ -144,3 +210,6 @@ ok "evidence -> ${EVIDENCE_DIR}/access-matrix.json"
 [[ "$(jq -r '.all_match' "${EVIDENCE_DIR}/access-matrix.json")" == "true" ]] \
   || die "access does not match the declared matrix (entries marked with !)"
 ok "every persona reads exactly the layers it was granted"
+[[ "$(jq -r '.s3_direct.all_denied' "${EVIDENCE_DIR}/access-matrix.json")" == "true" ]] \
+  || die "a persona read a layer bucket straight from S3, bypassing Lake Formation"
+ok "straight from S3: $(jq -r '.s3_direct | "\(.denied) of \(.checks)"' "${EVIDENCE_DIR}/access-matrix.json") persona x layer reads denied"

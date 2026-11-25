@@ -30,6 +30,8 @@ resource "aws_glue_catalog_table" "this" {
       "grain"         = each.value.grain
       "layer"         = each.value.layer
       "source.system" = each.value.source
+      "owner"         = local.table_owner
+      "refresh"       = local.table_refresh[each.value.source]
     },
   )
 

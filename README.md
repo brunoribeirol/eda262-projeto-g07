@@ -146,7 +146,8 @@ scripts/part-2/run_pipeline.sh --days 30
 # 4. Business question, its measured cost, and the same question on trusted/raw for comparison.
 scripts/part-2/run_query.sh
 
-# 5. Proofs: re-loading a day changes nothing; each persona reads only its layers.
+# 5. Proofs: re-loading a day changes nothing; each persona reads only its layers,
+#    and none reads a layer straight from S3.
 scripts/part-2/check_idempotency.sh
 scripts/part-2/check_access.sh
 ```
@@ -176,7 +177,7 @@ line to `docs/evidence/part-2/load-history.jsonl`.
 | `build_refined.sh` | `refined-build.json`, `load-history.jsonl` |
 | `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv`, `epss-sample-stability.csv` |
 | `check_idempotency.sh` | `idempotency-check.json` |
-| `check_access.sh` | `access-matrix.json` |
+| `check_access.sh` | `access-matrix.json` (each persona × layer through Athena, and straight from S3) |
 | `deploy.sh` | `apply-check.json` (resources added/changed/destroyed, as Terraform reports them, and whether a plan right after the apply is empty) |
 | `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
 | `destroy.sh` | `destroy-check.json` (resources destroyed, orphan check) |

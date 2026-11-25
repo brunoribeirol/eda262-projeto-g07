@@ -148,7 +148,8 @@ scripts/part-2/run_pipeline.sh --days 30
 # 4. Pergunta de negócio, custo medido, e a mesma pergunta na trusted/raw para comparação.
 scripts/part-2/run_query.sh
 
-# 5. Provas: recarregar um dia não muda nada; cada perfil lê só as suas camadas.
+# 5. Provas: recarregar um dia não muda nada; cada perfil lê só as suas camadas,
+#    e nenhum lê uma camada direto no S3.
 scripts/part-2/check_idempotency.sh
 scripts/part-2/check_access.sh
 ```
@@ -178,7 +179,7 @@ morre no meio é corrigida rodando de novo: toda escrita sobrescreve a própria 
 | `build_refined.sh` | `refined-build.json`, `load-history.jsonl` |
 | `run_query.sh` | `business-question-result.csv`, `query-cost.json`, `cost-comparison.json`, `grain-check-result.csv`, `epss-sample-stability.csv` |
 | `check_idempotency.sh` | `idempotency-check.json` |
-| `check_access.sh` | `access-matrix.json` |
+| `check_access.sh` | `access-matrix.json` (cada perfil × camada pelo Athena, e direto no S3) |
 | `deploy.sh` | `apply-check.json` (recursos criados/alterados/destruídos, como a Terraform reporta, e se um plan logo depois do apply sai vazio) |
 | `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
 | `destroy.sh` | `destroy-check.json` (recursos destruídos, conferência de órfãos) |

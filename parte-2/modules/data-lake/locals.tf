@@ -72,6 +72,19 @@ locals {
   }
 
   # ---------------------------------------------------------------------------
+  # The catalog is the contract a consumer reads before writing SQL: what the table
+  # answers (description), its grain, a comment on every column, who answers for it
+  # (owner) and when it changes (refresh). verifica.sh checks all of it in the Glue API.
+  # ---------------------------------------------------------------------------
+  table_owner = "EDA262 group g07 - data engineering"
+
+  table_refresh = {
+    "first-epss"          = "daily: one partition per EPSS publication day, loaded by scripts/part-2/run_pipeline.sh"
+    "cisa-kev"            = "on every pipeline run: one partition per KEV catalog release (catalog_date), loaded by scripts/part-2/run_pipeline.sh"
+    "cisa-kev+first-epss" = "daily: the EPSS day's partition is rebuilt from trusted by scripts/part-2/run_pipeline.sh"
+  }
+
+  # ---------------------------------------------------------------------------
   # Every table in the lake, declared as data. Schemas are explicit -- never
   # inferred by a Glue Crawler (course guide, carried over from Part 1).
   #
