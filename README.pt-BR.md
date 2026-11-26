@@ -182,7 +182,7 @@ morre no meio é corrigida rodando de novo: toda escrita sobrescreve a própria 
 | `check_access.sh` | `access-matrix.json` (cada perfil × camada pelo Athena, e direto no S3) |
 | `deploy.sh` | `apply-check.json` (recursos criados/alterados/destruídos, como a Terraform reporta, e se um plan logo depois do apply sai vazio) |
 | `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
-| `destroy.sh` | `destroy-check.json` (recursos destruídos, conferência de órfãos) |
+| `destroy.sh` | `destroy-check.json` (recursos no state antes e destruídos, grants dos perfis no Lake Formation antes e depois, conferência de órfãos) |
 
 Todo JSON leva o `run_id` da execução que o gravou, e o `query-cost.json` registra também o
 sha256 de cada CSV de resultado.

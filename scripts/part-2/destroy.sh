@@ -45,6 +45,27 @@ PERSONAS_JSON="$(tf_output_json personas)"
 WORKGROUPS="$(tf_output pipeline_workgroup) $(jq -r '[.[].workgroup] | join(" ")' <<< "${PERSONAS_JSON}")"
 ROLE_NAMES="$(jq -r '[.[].role_arn | split("/") | last] | join(" ")' <<< "${PERSONAS_JSON}") $(tf_output lakeformation_data_access_role_arn | awk -F/ '{ print $NF }')"
 LOCATIONS="$(tf_output_json registered_locations | jq -r 'join(" ")')"
+PERSONA_ARNS="$(jq -r '[.[].role_arn] | join(" ")' <<< "${PERSONAS_JSON}")"
+
+# Lake Formation grants held by the personas, across the whole catalog. Prints "null" when
+# the call is refused (only a Lake Formation admin may list every grant), never a false 0.
+lf_persona_grants() {
+  local out n
+  out="$(aws_cli lakeformation list-permissions --output json 2>/dev/null)" || { printf 'null'; return 0; }
+  n="$(jq -s --arg arns "${PERSONA_ARNS}" '($arns | split(" ")) as $personas
+    | [.[].PrincipalResourcePermissions[]?
+       | select(.Principal.DataLakePrincipalIdentifier as $p | $personas | index($p))] | length' <<< "${out}" 2>/dev/null || true)"
+  [[ "${n}" =~ ^[0-9]+$ ]] && printf '%s' "${n}" || printf 'null'
+}
+
+# Measured before the teardown, so the evidence explains any gap between what the apply
+# created and what Terraform destroys: a resource the destroy's refresh can no longer read
+# is dropped from the plan instead of destroyed. The counts say whether it was still in
+# the state and still granted in Lake Formation at that moment.
+STATE_RESOURCES="$(terraform -chdir="${TF_DIR}" state list | grep -cvE '(^|\.)data\.' || true)"
+STATE_LF_GRANTS="$(terraform -chdir="${TF_DIR}" state list | grep -c 'aws_lakeformation_permissions\.' || true)"
+LF_GRANTS_BEFORE="$(lf_persona_grants)"
+log "Before the destroy: ${STATE_RESOURCES} resources in the state (${STATE_LF_GRANTS} Lake Formation grants), ${LF_GRANTS_BEFORE} persona grants in Lake Formation"
 
 log "Destroying the parte-2 stack (workspace ${WORKSPACE})"
 TF_VARS=(-var "aws_region=${REGION}")
@@ -54,6 +75,11 @@ terraform -chdir="${TF_DIR}" destroy -input=false -auto-approve "${TF_VARS[@]}" 
 # "Destroy complete! Resources: 74 destroyed." -- the count Terraform itself reports.
 RESOURCES_DESTROYED="$(sed -n 's/.*Destroy complete! Resources: \([0-9][0-9]*\) destroyed.*/\1/p' "${DESTROY_LOG}" | tail -n 1)"
 rm -f "${DESTROY_LOG}"
+
+# Lake Formation drops a database's grants together with the database: measure what the
+# personas still hold. Listing every grant needs a Lake Formation admin, and the destroy
+# has just cleared the admins, so it is asked again once the settings are restored.
+LF_GRANTS_AFTER="$(lf_persona_grants)"
 
 # --- Lake Formation settings ---------------------------------------------------------
 # Destroying aws_lakeformation_data_lake_settings CLEARS the account settings (no admins,
@@ -78,6 +104,7 @@ if [[ "${RESTORE_LF}" -eq 1 ]]; then
   rm -f "${SETTINGS_FILE}" "${SETTINGS_BACKUP}"
   ok "Lake Formation settings restored"
 fi
+[[ "${LF_GRANTS_AFTER}" != "null" ]] || LF_GRANTS_AFTER="$(lf_persona_grants)"
 
 # --- orphan check --------------------------------------------------------------------
 log "Verifying no resources were orphaned"
@@ -104,6 +131,12 @@ for location in ${LOCATIONS}; do
   CHECKED=$(( CHECKED + 1 ))
   if grep -qF "${location}" <<< "${REGISTERED}"; then warn "Lake Formation registration still exists: ${location}"; ORPHANS=1; fi
 done
+if [[ "${LF_GRANTS_AFTER}" != "null" ]]; then
+  CHECKED=$(( CHECKED + 1 ))
+  if [[ "${LF_GRANTS_AFTER}" -gt 0 ]]; then warn "Lake Formation grants still held by the personas: ${LF_GRANTS_AFTER}"; ORPHANS=1; fi
+else
+  warn "could not list Lake Formation grants after the destroy -- persona grants not checked"
+fi
 
 # The lake's run, when this teardown removes a lake built by run_all.sh; otherwise our own.
 LAKE_RUN_ID="$(jq -r '.run_id // empty' "${RUN_MANIFEST}" 2>/dev/null || true)"
@@ -111,12 +144,18 @@ mkdir -p "${EVIDENCE_DIR}"
 jq -n --arg run_id "${LAKE_RUN_ID:-${RUN_ID}}" --arg destroyed_at "$(now_utc_iso)" --arg region "${REGION}" \
   --arg workspace "${WORKSPACE}" --arg destroyed "${RESOURCES_DESTROYED}" \
   --argjson checked "${CHECKED}" --argjson orphans "${ORPHANS}" \
+  --argjson state_resources "${STATE_RESOURCES:-null}" --argjson state_lf_grants "${STATE_LF_GRANTS:-null}" \
+  --argjson lf_before "${LF_GRANTS_BEFORE}" --argjson lf_after "${LF_GRANTS_AFTER}" \
   '{
      run_id: $run_id,
      destroyed_at_utc: $destroyed_at,
      region: $region,
      workspace: $workspace,
+     terraform_resources_in_state_before: $state_resources,
+     terraform_lakeformation_grants_in_state_before: $state_lf_grants,
      terraform_resources_destroyed: (if $destroyed == "" then null else ($destroyed | tonumber) end),
+     lakeformation_persona_grants_before: $lf_before,
+     lakeformation_persona_grants_after: $lf_after,
      resources_checked_in_aws: $checked,
      orphaned: ($orphans != 0)
    }' > "${EVIDENCE_DIR}/destroy-check.json"

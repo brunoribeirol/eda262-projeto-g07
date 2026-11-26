@@ -180,7 +180,7 @@ line to `docs/evidence/part-2/load-history.jsonl`.
 | `check_access.sh` | `access-matrix.json` (each persona × layer through Athena, and straight from S3) |
 | `deploy.sh` | `apply-check.json` (resources added/changed/destroyed, as Terraform reports them, and whether a plan right after the apply is empty) |
 | `run_all.sh`, `verify_run.sh` | `run-manifest.json`, `verifica-output.txt` |
-| `destroy.sh` | `destroy-check.json` (resources destroyed, orphan check) |
+| `destroy.sh` | `destroy-check.json` (resources in the state before and destroyed, persona Lake Formation grants before and after, orphan check) |
 
 Every JSON carries the `run_id` of the run that wrote it; `query-cost.json` also records the
 sha256 of each result CSV.
