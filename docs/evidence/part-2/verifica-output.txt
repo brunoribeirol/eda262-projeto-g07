@@ -1,7 +1,7 @@
 Verificacao EDA262 -- Parte 2 (AV2) -- grupo g07
 repositorio: /Users/brunoribeiro/Documents/Projects/academic/eda262-projeto-g07
 regiao: us-east-1 (--region)
-evidencias versionadas: execucao 20261102T051658Z
+evidencias versionadas: execucao 20261126T150713Z
 
 1. Estrutura do repositorio
 PASSA  Terraform da Parte 2 em parte-2/ na raiz do repositorio
@@ -32,7 +32,10 @@ PASSA  Granularidade comprovada (0 chave duplicada)
 PASSA  Backfill registrado (>= 2 particoes EPSS carregadas)
 PASSA  Ingestao idempotente comprovada (recarga sem duplicar)
 PASSA  Matriz de acesso por camada comprovada (Lake Formation)
+PASSA  S3 direto recusado para todo perfil (so Athena + Lake Formation)
+       9 de 9 leituras diretas no S3 recusadas
 PASSA  Resultado da consulta de negocio salvo
+PASSA  Plano sem mudancas logo depois do apply (sem drift)
 
 4. Recursos provisionados na AWS
 PASSA  Bucket da camada raw (eda262-g07-lake-raw)
@@ -41,6 +44,8 @@ PASSA  Bucket da camada refined (eda262-g07-lake-refined)
 PASSA  Bucket de resultados do Athena
 PASSA  Bancos no Glue por camada (raw/trusted/refined)
 PASSA  Todas as tabelas declaram a granularidade no catalogo
+PASSA  Contrato no catalogo: descricao, dono, atualizacao, comentarios
+       5 tabelas com descricao, dono, atualizacao e comentario em toda coluna
 PASSA  Tabelas trusted/refined em Parquet e particionadas
 PASSA  Nenhuma tabela ou Crawler criado por Glue Crawler
 PASSA  Athena WorkGroup do pipeline (eda262-g07-wg)
@@ -53,14 +58,16 @@ PASSA  Tags obrigatorias aplicadas nos buckets
 
 5. Medido agora na conta (Athena, consultas publicadas pela Terraform)
 PASSA  Meta de custo em bytes cumprida pela pergunta de negocio (refined)
-       2026-10-01..2026-10-30: 164264 B lidos, meta 491520 B (16384 B x 30 dias)
+       2026-10-26..2026-11-24: 167156 B lidos, meta 491520 B (16384 B x 30 dias)
 PASSA  Mesma resposta nas tres camadas (raw / trusted / refined)
-       20 fabricantes; raw 83441797 B, trusted 57823906 B
+       24 fabricantes; raw 86362462 B, trusted 59819685 B
 PASSA  Granularidade e idempotencia: 0 chave duplicada em toda tabela
-       3 tabelas, 11695371 linhas, 0 duplicadas
+       3 tabelas, 12118064 linhas, 0 duplicadas
 PASSA  Cada perfil le exatamente as camadas declaradas (Lake Formation)
        9 de 9 combinacoes perfil x camada iguais a matriz declarada
+PASSA  Nenhum perfil le as camadas direto no S3 (AccessDenied)
+       9 de 9 leituras diretas no S3 recusadas (perfil x camada)
 
 ------------------------------------------------------------
-Resultado: 44 PASSA / 0 FALHA  (total: 44 criterios)
+Resultado: 48 PASSA / 0 FALHA  (total: 48 criterios)
 Todos os criterios foram atendidos.

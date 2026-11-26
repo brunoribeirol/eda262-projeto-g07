@@ -4,8 +4,8 @@
 - **Part 1 (AV1):** submitted and presented on 2026-10-05; the delivered state is the signed tag
   `av1-entrega`.
 - **Part 2 (AV2, due 2026-12-02, moved from 2026-11-30 by the professor):** implemented and
-  closed by the reference run `20261102T051658Z` (2026-11-02 to 2026-11-04): apply of 74 resources
-  from zero, `verify_run.sh` 44/0, `destroy.sh` 74 destroyed with 0 orphans. The lake is torn
+  closed by the reference run `20261126T150713Z` (2026-11-26, EPSS 2026-10-26 to 2026-11-24): apply
+  of 74 resources from zero, `verify_run.sh` 48/0, `destroy.sh` 74 destroyed with 0 orphans. The lake is torn
   down. Open as draft PR #1 (`feat/part-2-data-lake` → `main`); merge and the signed tag
   `av2-entrega` close the delivery.
 

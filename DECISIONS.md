@@ -323,12 +323,12 @@ exploited (EPSS) over a 30-day window — and what does answering that cost in A
 **Scope of each measure:** the ranking counts exploited CVEs *added* in the last 12 months (recent
 activity); the mean EPSS covers *all* of the vendor's exploited CVEs already listed that day
 (current exposure), because an old exploited CVE stays a risk while unpatched systems exist.
-**Reference window:** EPSS 2026-10-01 to 2026-10-30 (30 days); KEV `catalogVersion` 2026.10.30
-(1,766 entries). AWS and local measurements share the window and the catalog: figures *measured
+**Reference window:** EPSS 2026-10-26 to 2026-11-24 (30 days); KEV `catalogVersion` 2026.11.25
+(1,805 entries). AWS and local measurements share the window and the catalog: figures *measured
 locally* come from the files the reference run wrote to raw. KEV changes during the week; every
 load records the version it used (`kev_catalog_date`).
 
-> **How to measure (source):** `scripts/part-2/profile_sources.sh --days 30 --to 2026-10-30
+> **How to measure (source):** `scripts/part-2/profile_sources.sh --days 30 --to 2026-11-24
 > --kev-file <catalog archived in raw>` — local DuckDB, no AWS account. Without `--kev-file` it
 > downloads CISA's current catalog.
 > **How to measure (AWS):** `scripts/part-2/run_all.sh` writes everything to `docs/evidence/part-2/`.
@@ -342,10 +342,11 @@ load records the version it used (`kev_catalog_date`).
 > `run_all.sh --to <day>` → this file and the decks quote the run until `check_evidence_sync.sh`
 > passes → `verify_run.sh` (final acceptance, lake still up) → `destroy.sh` (closes the run and
 > writes `destroy-check.json`).
-> **Reference AWS run:** `run_id` **20261102T051658Z**, commit `02a03e3`, no uncommitted code
-> changes (`run-manifest.json`). us-east-1, window 2026-10-01 to 2026-10-30 (30 partitions), KEV
-> `catalog_date` 2026-10-30 (1,766 entries). Business question on refined in execution
-> `754fe773-ddd2-459e-b6e7-8ee5ba8194a7`: 164,258 B scanned, 1,023 ms of engine time.
+> **Reference AWS run:** `run_id` **20261126T150713Z**, commit `a53e65e`, no uncommitted code
+> changes (`run-manifest.json`). us-east-1, window 2026-10-26 to 2026-11-24 (30 partitions), KEV
+> `catalog_date` 2026-11-25 (1,805 entries). Business question on refined in execution
+> `4f609908-4603-4a5d-b013-758403c17b07`: 167,244 B scanned, 1,096 ms of engine time. Why the
+> window ends on 2026-11-24 and not on the newest day: decision 26.
 > Figures marked *measured on AWS* come from the
 > `DataScannedInBytes` Athena itself reports. Figures marked *calculated* derive from measured
 > bytes and Athena's billing rule (USD 5.00/TB, 10 MB minimum per query). A figure not measured yet
@@ -357,10 +358,10 @@ load records the version it used (`kev_catalog_date`).
 |---|---|
 | Whole KEV in Part 1 trusted | **1,502,572 B** — 7x below the 10 MB floor |
 | Saving possible from Parquet/partitioning on KEV alone | **USD 0.00** (billing already at the floor) |
-| EPSS per day (30-day average) | **389,499** rows, **2,733,786 B** gzip |
-| EPSS, 30-day window | **11,684,958** rows, **82,013,574 B** gzip |
-| Median EPSS on 2026-10-30: KEV CVEs vs all CVEs | **0.5359** vs **0.00626** (86x) |
-| CVEs with EPSS >= 0.10 on 2026-10-30: KEV vs all | **75.3%** vs **4.4%** |
+| EPSS per day (30-day average) | **403,581** rows, **2,829,091 B** gzip |
+| EPSS, 30-day window | **12,107,444** rows, **84,872,716 B** gzip |
+| Median EPSS on 2026-11-24: KEV CVEs vs all CVEs | **0.5397** vs **0.00611** (88x) |
+| CVEs with EPSS >= 0.10 on 2026-11-24: KEV vs all | **75.0%** vs **4.3%** |
 
 Part 2 grades cost reduction, and only volume above the billing floor makes it measurable. EPSS
 adds information too: among exploited CVEs, it separates those still likely to be exploited. NVD
@@ -371,35 +372,35 @@ backfill and incremental loads.
 
 | Layer | Content | Size in S3 (30 days, measured on AWS) |
 |---|---|---|
-| raw | EPSS `.csv.gz` + original KEV (archive) + KEV as JSON lines | **85,268,552 B** in 32 objects |
-| trusted | `epss_scores` + `kev_vulnerabilities`, Parquet ZSTD | **93,432,257 B** in 31 objects |
-| refined | `vendor_exposure_daily`, vendor x day | **360,988 B** in 30 objects, 8,647 rows |
+| raw | EPSS `.csv.gz` + original KEV (archive) + KEV as JSON lines | **88,260,648 B** in 32 objects |
+| trusted | `epss_scores` + `kev_vulnerabilities`, Parquet ZSTD | **96,296,148 B** in 31 objects |
+| refined | `vendor_exposure_daily`, vendor x day | **365,142 B** in 30 objects, 8,815 rows |
 
 Raw keeps replay possible: if a cleaning rule changes, trusted is re-derived without
-re-downloading. Refined is **259x** smaller than trusted and answers the question without redoing
-an 11.7-million-row join on every execution. Trusted ended up larger than raw — decision 16 explains
-why. The KEV document is archived byte-for-byte and also re-framed as JSON lines (1,826,755 B ->
-1,428,223 B for catalog 2026.10.30), because the JSON SerDe reads one object per line. A `jq` gate
+re-downloading. Refined is **264x** smaller than trusted and answers the question without redoing
+a 12.1-million-row join on every execution. Trusted ended up larger than raw — decision 16 explains
+why. The KEV document is archived byte-for-byte and also re-framed as JSON lines (1,898,186 B ->
+1,489,746 B for catalog 2026.11.25), because the JSON SerDe reads one object per line. A `jq` gate
 publishes only if the two are **identical value for value**.
 
 ## 13. Grain of every table
 
 | Table | Grain declared in Glue | Measured on AWS (rows / distinct keys / duplicates) |
 |---|---|---|
-| `trusted.epss_scores` | one row per `(cve_id, snapshot_date)` | **11,684,958** / **11,684,958** / **0** |
-| `trusted.kev_vulnerabilities` | one row per `(cve_id, catalog_date)` | **1,766** / **1,766** / **0** |
-| `refined.vendor_exposure_daily` | one row per `(vendor_project, snapshot_date)` | **8,647** / **8,647** / **0** (~288 vendors/day) |
+| `trusted.epss_scores` | one row per `(cve_id, snapshot_date)` | **12,107,444** / **12,107,444** / **0** |
+| `trusted.kev_vulnerabilities` | one row per `(cve_id, catalog_date)` | **1,805** / **1,805** / **0** |
+| `refined.vendor_exposure_daily` | one row per `(vendor_project, snapshot_date)` | **8,815** / **8,815** / **0** (~294 vendors/day) |
 
 Measured by the `eda262-g07-grain-check` named query (`grain-check-result.csv`); the three counts
 match exactly what DuckDB measured locally on the same files. Refined is per vendor because the
-question is about vendors; per CVE it would hold 1,766 x 30 = **52,980** rows (6x more) to regroup
+question is about vendors; per CVE it would hold 1,805 x 30 = **54,150** rows (6x more) to regroup
 on every query. It stores `epss_sum` and `epss_scored_cves`, so a multi-day average is sum/count,
 not an average of averages.
 
 ## 14. Keys
 
 Composite natural keys, no surrogate, with the partition key inside the key: **0** duplicates in
-11,684,958 rows; **0** malformed `cve_id`; **291** distinct vendors both case-sensitive and
+12,107,444 rows; **0** malformed `cve_id`; **303** distinct vendors both case-sensitive and
 case-insensitive (no spelling split in `GROUP BY`). Because the date is part of the key,
 re-loading a day replaces exactly that day's rows — which is what makes decision 19 possible.
 
@@ -410,15 +411,15 @@ snapshot per partition; partition keys as ISO-8601 strings (lexical order = chro
 
 | Evidence (`epss` column, measured on AWS) | Value |
 |---|---|
-| 1-day query | **789,155 B** scanned |
-| Same query over 30 days | **23,094,812 B** scanned |
-| Saving on a 1-day query from partitioning | **29.3x** |
-| One daily partition in S3 (all columns) | **~3.1 MB** (3,142,166 B on 2026-10-30) |
+| 1-day query | **825,901 B** scanned |
+| Same query over 30 days | **23,640,972 B** scanned |
+| Saving on a 1-day query from partitioning | **28.6x** |
+| One daily partition in S3 (all columns) | **~3.3 MB** (3,253,436 B on 2026-11-24) |
 
 Rejected: **no partition** (a 1-day question reads the whole history; at 1 year, projected from
-the 789,155 B/day measured, ~288 MB -> USD 0.00131 per query vs the USD 0.0000477 floor, 27x);
-**monthly** (a 1-day question reads the whole month, up to 29.3x); **KEV by year of `date_added`**
-(6 partitions of 186-555 rows in a **183,292 B** table — tiny files and no saving below the floor).
+the 825,901 B/day measured, ~301 MB -> USD 0.00137 per query vs the USD 0.0000477 floor, 29x);
+**monthly** (a 1-day question reads the whole month, up to 28.6x); **KEV by year of `date_added`**
+(6 partitions of 186-555 rows in a **188,966 B** table — tiny files and no saving below the floor).
 Raw tables use **partition projection**: loading a day is an S3 upload, with **0** `MSCK REPAIR`
 and **0** partition-registration calls; trusted/refined partitions are registered by Athena's own
 `INSERT INTO`.
@@ -428,22 +429,22 @@ and **0** partition-registration calls; trusted/refined partitions are registere
 `parquet.compression = ZSTD` on the table is honored by `INSERT INTO`: all 6 columns of the file
 Athena wrote are ZSTD.
 
-| One day (2026-10-30, 398,142 rows) | Bytes |
+| One day (2026-11-24, 411,908 rows) | Bytes |
 |---|---|
-| CSV gzip (as published, raw) | **2,792,728** |
-| **Parquet ZSTD written by Athena** (measured in S3) | **3,142,166** (+12.5%) |
-| Parquet ZSTD written by DuckDB (local reference) | 2,738,644 |
-| Parquet Snappy (DuckDB, local) | 5,317,635 |
-| Columns the question reads in Athena's file (`cve_id` + `epss`) | **1,962,716** (62.5%) |
+| CSV gzip (as published, raw) | **2,885,252** |
+| **Parquet ZSTD written by Athena** (measured in S3) | **3,253,436** (+12.8%) |
+| Parquet ZSTD written by DuckDB (local reference) | 2,829,395 |
+| Parquet Snappy (DuckDB, local) | 5,488,416 |
+| Columns the question reads in Athena's file (`cve_id` + `epss`) | **2,044,428** (62.8%) |
 
 The finding, in two parts:
 
-1. **Parquet did not shrink the file — it is 12.5% larger than the gzip CSV.** Athena's writer
-   (`parquet-mr-trino`) stores `cve_id` without a dictionary (`PLAIN` encoding): **1,148,374 B**,
-   2.3x DuckDB's 490,626 B. This only surfaced because we measured the file Athena wrote instead of
+1. **Parquet did not shrink the file — it is 12.8% larger than the gzip CSV.** Athena's writer
+   (`parquet-mr-trino`) stores `cve_id` without a dictionary (`PLAIN` encoding): **1,196,975 B**,
+   2.4x DuckDB's 501,943 B. This only surfaced because we measured the file Athena wrote instead of
    trusting the local estimate.
 2. **Parquet still lowers the cost, because cost is what is read, not what is stored.** The
-   question reads 2 of 6 columns. Measured on AWS: **57,851,669 B** from trusted vs **83,441,797 B**
+   question reads 2 of 6 columns. Measured on AWS: **59,804,106 B** from trusted vs **86,362,462 B**
    from raw over the same window — **1.44x less**. CSV forces reading 100% of every row.
 
 Parquet also brings **real types** (`double`, `date` — the promise of Part 1 decision 5) and
@@ -458,8 +459,8 @@ tagged on the pipeline WorkGroup. `run_query.sh` fails if it is missed, and `ver
 tag from the account and measures the query again in Athena.
 
 **Why bytes, not dollars:** every query under 10 MB pays the same floor, USD 0.00004768. Refined
-(164,258 B) and a single trusted day (789,155 B, decision 15) cost exactly the same although the
-second reads 4.8x more. A dollar target would pass any layout under 10 MB; a byte target tells
+(167,244 B) and a single trusted day (825,901 B, decision 15) cost exactly the same although the
+second reads 4.9x more. A dollar target would pass any layout under 10 MB; a byte target tells
 the good layout from the bad one.
 
 **Why per day of window:** the window is a parameter of the question. A fixed byte target would
@@ -469,18 +470,18 @@ past 3x the window.
 
 | Same question, 30-day window (measured on AWS) | Bytes scanned | Per day of window | Vs target | Engine time | Cost per execution |
 |---|---|---|---|---|---|
-| from raw (CSV + JSON) | **83,441,797** | 2,781,393 | **170x** over | 4,363 ms | USD 0.00037945 |
-| from trusted (Parquet) | **57,851,669** | 1,928,389 | **118x** over | 3,421 ms | USD 0.00026308 |
-| **from refined** | **164,258** | **5,475** | **3.0x** under | **1,023 ms** | USD 0.00004768 (floor) |
+| from raw (CSV + JSON) | **86,362,462** | 2,878,749 | **176x** over | 4,102 ms | USD 0.00039273 |
+| from trusted (Parquet) | **59,804,106** | 1,993,470 | **122x** over | 4,435 ms | USD 0.00027196 |
+| **from refined** | **167,244** | **5,575** | **2.9x** under | **1,096 ms** | USD 0.00004768 (floor) |
 
-- **How the target was set:** 16 KiB per day, about 3x what refined reads per day (5,475 B in this
-  run). The headroom absorbs growth in the number of vendors (291 in the catalog), while any read
-  of the fact table still fails by two orders of magnitude: trusted is 118x over.
-- **Raw vs refined:** **508x** fewer bytes but only **8.0x** in cost, because the 10 MB floor caps
+- **How the target was set:** 16 KiB per day, about 3x what refined reads per day (5,575 B in this
+  run). The headroom absorbs growth in the number of vendors (303 in the catalog), while any read
+  of the fact table still fails by two orders of magnitude: trusted is 122x over.
+- **Raw vs refined:** **516x** fewer bytes but only **8.2x** in cost, because the 10 MB floor caps
   the saving. It is the effect Part 1 measured, and the reason the target is not in dollars.
 - **The layer does not change the answer:** `run_query.sh` compared the three results and they
   were **identical**, byte for byte (`results_identical_across_layers = true`).
-- **Estimate vs measurement:** DuckDB predicted 37,047 B for refined; Athena read 164,258 B (4.4x).
+- **Estimate vs measurement:** DuckDB predicted 37,646 B for refined; Athena read 167,244 B (4.4x).
   Athena writes one file per daily partition (30 files of ~12 KB), each with its own footer and
   column headers.
 
@@ -488,15 +489,15 @@ past 3x the window.
 
 | Option | Cost of a 30-day load |
 |---|---|
-| **Athena INSERT** (chosen) | **82,013,574 B** scanned -> **USD 0.00037295** (measured on AWS) |
-| Glue ETL (Spark), minimum run | 2 DPU x 1 min x USD 0.44/DPU-h = **USD 0.0147** (list price, not measured): **39x** |
-| Local conversion (DuckDB/pyarrow) | USD 0 compute, but a dependency on the evaluator's machine and an 82 MB upload |
+| **Athena INSERT** (chosen) | **84,872,716 B** scanned -> **USD 0.00038596** (measured on AWS) |
+| Glue ETL (Spark), minimum run | 2 DPU x 1 min x USD 0.44/DPU-h = **USD 0.0147** (list price, not measured): **38x** |
+| Local conversion (DuckDB/pyarrow) | USD 0 compute, but a dependency on the evaluator's machine and an 85 MB upload |
 
 Every transformation is a versioned `INSERT INTO ... SELECT` in `parte-2/sql/etl/`. Each EPSS
 file's metadata is spread to its rows with a window function rather than a self-join: Athena does
 not materialize CTEs, and Part 1 measured exactly **2.00x** scan on a CTE read twice. On AWS, the
-backfill `INSERT` scanned **82,013,574 B — exactly the byte total of the 30 gzip files**; a
-self-join would have read 164.0 MB.
+backfill `INSERT` scanned **84,872,716 B — exactly the byte total of the 30 gzip files**; a
+self-join would have read 169.7 MB.
 
 ## 19. Idempotent ingestion: partition overwrite
 
@@ -505,9 +506,9 @@ deterministic.
 
 | Evidence | Value |
 |---|---|
-| Re-load of 2026-10-30 through every layer: trusted rows before -> after | **398,142 -> 398,142** (measured on AWS) |
-| Same re-load on refined | **291 -> 291** |
-| What an append-only `INSERT` would produce | **796,284** and **582** rows (2x) |
+| Re-load of 2026-11-24 through every layer: trusted rows before -> after | **411,908 -> 411,908** (measured on AWS) |
+| Same re-load on refined | **301 -> 301** |
+| What an append-only `INSERT` would produce | **823,816** and **602** rows (2x) |
 
 `scripts/part-2/check_idempotency.sh` re-loads the newest day with the same commands a scheduled
 run uses and writes `idempotency-check.json`. Rejected: `MERGE` on Iceberg — another table format,
@@ -523,10 +524,10 @@ with the command that repairs it.
 
 | Evidence | Value |
 |---|---|
-| 30-day backfill in one `INSERT` (measured on AWS) | **82,013,574 B** -> **USD 0.00037295** |
-| Same 30 days as 30 daily `INSERT`s | 30 x 10 MB floor -> **USD 0.00143** *calculated* (**3.8x** more) |
-| 1-day trusted `INSERT` (measured on AWS) | **2,792,728 B** -> under the floor -> USD 0.00004768 |
-| 1-day refined `INSERT` (measured on AWS) | **1,977,629 B** -> under the floor -> USD 0.00004768 |
+| 30-day backfill in one `INSERT` (measured on AWS) | **84,872,716 B** -> **USD 0.00038596** |
+| Same 30 days as 30 daily `INSERT`s | 30 x 10 MB floor -> **USD 0.00143** *calculated* (**3.7x** more) |
+| 1-day trusted `INSERT` (measured on AWS) | **2,885,252 B** -> under the floor -> USD 0.00004768 |
+| 1-day refined `INSERT` (measured on AWS) | **2,059,752 B** -> under the floor -> USD 0.00004768 |
 | One full incremental day (6 statements, all at the floor) | **USD 0.000286** *calculated* from the measurements above |
 | Max batch per `INSERT` | 30 partitions (Athena allows 100) |
 
@@ -545,7 +546,7 @@ accepts a row only when the two dates match.
 
 | Evidence | Value |
 |---|---|
-| Rows whose `score_date` differs from the file's day, over the 30 days (measured on AWS: source rows - trusted rows) | **0** of 11,684,958 |
+| Rows whose `score_date` differs from the file's day, over the 30 days (measured on AWS: source rows - trusted rows) | **0** of 12,107,444 |
 | Partitions rewritten to recover a day that arrived late | **1** per layer (`ingest_epss.sh --from D --to D`, then `build_refined.sh --date D`) |
 
 EPSS publishes one whole file per day, and no row arrives after its day, so the largest measured
@@ -561,9 +562,9 @@ record.
 ## 21. Point-in-time correctness
 
 On day D a CVE counts for its vendor only if CISA had already listed it on D (`date_added <= D`):
-**35** of 1,766 KEV CVEs were listed after the window started (2026-10-01, measured locally). The
+**47** of 1,805 KEV CVEs were listed after the window started (2026-10-26, measured locally). The
 KEV dimension is a newer snapshot than the backfilled days; without the rule, the first day of the
-window would count those 35 and the history would show exposure that did not exist yet.
+window would count those 47 and the history would show exposure that did not exist yet.
 
 ## 22. Per-layer access: Lake Formation
 
@@ -578,6 +579,7 @@ window would count those 35 and the history would show exposure that did not exi
 | Persona x layer combinations tested live (measured on AWS) | **9 of 9** match the matrix: 6 granted, 3 denied by Lake Formation |
 | `IAMAllowedPrincipals` default on new databases/tables | **removed** (0 entries) |
 | S3 permissions of personas on lake buckets | **0** actions |
+| Each persona listing each layer bucket straight from S3 (measured on AWS) | **9 of 9** denied (`AccessDenied`); the operator lists the same buckets |
 | IAM policy differences between personas | **0**, besides their own WorkGroup and prefix |
 
 Identical IAM means a denied query can only have been denied by Lake Formation — the test proves
@@ -588,12 +590,25 @@ WorkGroups), as AWS recommends: Lake Formation does not govern query results or 
 Lake Formation settings are account-wide: `deploy.sh` saves the originals and `destroy.sh`
 restores them.
 
+Reading a bucket straight from S3 would bypass Lake Formation, so `check_access.sh` also tries it
+as every persona: all **9** reads are denied, because a persona reaches data only through Athena,
+with credentials Lake Formation vends per query.
+
+- **Grant scope: the whole layer.** A persona's SELECT covers every table of its layer, current
+  and future (`wildcard`): a new table in refined is readable by `business-user` with **0** new
+  grants. What we accept: nothing added to a layer is private by default.
+- **No column filter.** **0** of the 21 columns of the two trusted tables identify a person —
+  CVE data is public — so hiding columns from `data-analyst` would protect nothing.
+- **The catalog is the contract.** Every table states what it answers (description), its grain,
+  an `owner` and a `refresh` cadence, and every column a comment: **5** tables, checked in the
+  Glue API by `verifica.sh`.
+
 ## 23. Cost guardrails on the WorkGroups
 
 | WorkGroup | Per-query cap | Largest legitimate query | Headroom | Max cost |
 |---|---|---|---|---|
-| pipeline (`eda262-g07-wg`) | **200 MB** | question on raw, 30 days: 83.4 MB (measured) | 2.5x | USD 0.00095 |
-| personas (3) | **100 MB** | question on trusted, 30 days: 57.9 MB (measured) | 1.8x | USD 0.00048 |
+| pipeline (`eda262-g07-wg`) | **200 MB** | question on raw, 30 days: 86.4 MB (measured) | 2.4x | USD 0.00095 |
+| personas (3) | **100 MB** | question on trusted, 30 days: 59.8 MB (measured) | 1.8x | USD 0.00048 |
 
 The persona headroom dropped from 2.8x (estimated) to 1.8x (measured) because of Athena's writer
 encoding (decision 16). It covers the 30-day window; a 60-day analysis on trusted would be
@@ -602,14 +617,14 @@ cancelled — on purpose: long analyses belong on refined, which reads kilobytes
 ## 24. Destroy with no orphans
 
 The reference run starts from a destroyed lake and ends with a teardown checked in AWS.
-`deploy.sh` records what the apply created (`apply-check.json`); `destroy.sh` checks **18**
+`deploy.sh` records what the apply created (`apply-check.json`); `destroy.sh` checks **19**
 resources in AWS after `terraform destroy` (4 buckets, 3 Glue databases, 4 WorkGroups, 4 IAM roles,
-3 Lake Formation registrations), restores the Lake Formation settings and writes
+3 Lake Formation registrations, and the personas' Lake Formation grants: **10** before, **0** after), restores the Lake Formation settings and writes
 `destroy-check.json`. Both files carry the run's `run_id`.
 
 - Apply from scratch: **74 resources** created, with **0** in the state before the apply
   (`apply-check.json`).
-- Acceptance before the teardown (`verify_run.sh`, lake still up): **44 of 44** criteria
+- Acceptance before the teardown (`verify_run.sh`, lake still up): **48 of 48** criteria
   (`verifica-output.txt`).
 - Teardown of the same run: `Destroy complete! Resources: 74 destroyed` — the same 74 the apply
   created (`destroy-check.json`).
@@ -627,11 +642,11 @@ reported only when the vendor has at least **10** EPSS-scored CVEs on every day 
 (`min_epss_sample_size`); below that the average is left empty. The ranking cuts by position
 (`rank() <= 15`), keeping every tie, instead of `LIMIT 15`.
 
-| Change of a vendor's average EPSS over 30 days (2026-10-01 to 2026-10-30) | n = 1–4 | n = 5–9 | n = 10–29 | n >= 30 |
+| Change of a vendor's average EPSS over 30 days (2026-10-26 to 2026-11-24) | n = 1–4 | n = 5–9 | n = 10–29 | n >= 30 |
 |---|---|---|---|---|
-| Vendors | 230 | 26 | 17 | 10 |
-| Largest change | 0.69 | 0.57 | **0.09** | **0.04** |
-| p90 of the change (approximate) | 0.02 | 0.15 | 0.04 | 0.04 |
+| Vendors | 238 | 26 | 17 | 10 |
+| Largest change | 0.64 | 0.11 | **0.05** | **0.03** |
+| p90 of the change (approximate) | 0.02 | 0.10 | 0.04 | 0.03 |
 
 Measured on AWS: `run_query.sh` runs `sql/analytics/epss_sample_stability.sql` on refined and
 writes `epss-sample-stability.csv`. DuckDB, on the same run's files, gives the same four groups and
@@ -639,18 +654,18 @@ the same largest changes, and it is what names the vendors below.
 
 **Why:**
 
-- **n >= 10:** from 10 CVEs up, no vendor's average moved more than 0.09 in 30 days (Citrix, with
-  27). Below 10 it moved up to 0.69 and 0.57: Widget Factory has 1 CVE, re-scored from 0.16 to
-  0.85; Plex's average fell from 0.73 to 0.16 because its portfolio grew from 1 to 5 CVEs inside
-  the window. Such an average describes one CVE, not the vendor. Part 1 showed a ratio like
+- **n >= 10:** from 10 CVEs up, no vendor's average moved more than 0.05 in 30 days (QNAP, with
+  11). Below 10 it moved up to 0.64 and 0.11: Collabora has 1 CVE, re-scored from 0.12 to 0.76;
+  Broadcom's average rose from 0.11 to 0.21 while its portfolio grew from 5 to 7 CVEs inside the
+  window. Such an average describes one CVE, not the vendor. Part 1 showed a ratio like
   "3 of 7" without this care.
 - **Why the tail, not the p90:** the p90 for n of 1 to 4 (0.02) is lower than for 10 to 29 (0.04),
   because most small vendors hold CVEs with a low, stable EPSS. The risk is the worst case: with
-  n < 10 a vendor's average can move 0.69 in a month, 7.6x the worst case with n >= 10.
-- **The tie `LIMIT 15` hid:** three vendors tie at rank 10 and eight at rank 13, with 4 new CVEs
-  each. Ranks 1 to 10 fill 12 rows, so `LIMIT 15` would keep 3 of the 8 and drop 5, picked by the
-  tie-breaker rather than by the data. Cutting by position lists all 20, and the 7 with n < 10
-  appear without an average.
+  n < 10 a vendor's average can move 0.64 in a month, 12x the worst case with n >= 10.
+- **The tie `LIMIT 15` hid:** four vendors tie at rank 11, with 5 new CVEs each, and ten at rank
+  15, with 4. Ranks 1 to 11 fill 14 rows, so `LIMIT 15` would keep 1 of the 10 and drop 9, picked
+  by the tie-breaker rather than by the data. Cutting by position lists all 24, and the 10 with
+  n < 10 appear without an average.
 - **Exposure still drives the ranking:** the order is by exploited CVEs added in 12 months only, a
   count. The EPSS average is context, never a cut-off criterion.
 
@@ -661,34 +676,49 @@ the same largest changes, and it is what names the vendors below.
 lake's newest partition as the last day, and the reference run pins that day with
 `run_all.sh --to`.
 
-| Evidence (KEV 2026.10.30 from the reference run, measured locally) | Value |
+| Evidence (KEV 2026.11.25 from the reference run, measured locally) | Value |
 |---|---|
-| CVEs added to KEV in the 12 months up to 2026-10-30, the window's last day | **313** |
-| The same count with `current_date` on 2026-11-10 | **310**, on the same catalog |
-| The same count with `current_date` on 2026-11-30, the original delivery date | **302**: 11 CVEs leave the window with no change in the data |
+| CVEs added to KEV in the 12 months up to 2026-11-24, the window's last day | **332** |
+| The same count with `current_date` on 2026-11-26 | **342**, on the same catalog: the 10 CVEs added after the window's last day enter the count |
+| The same count with `current_date` on 2026-12-02, the delivery date | **339**: 3 CVEs leave the window with no change in the data |
 
 **Why:** with `current_date`, the same query over the same data answers differently depending on
 the day it runs, and no run can be reproduced. The Part 1 query used
 `date_add('month', -12, current_date)`. Anchored on the data, the answer changes only when the data
 does.
 
+**Why the reference window ends on 2026-11-24, not on the newest day.** On 2026-11-25 EPSS
+changed level with the same `model_version` (v2026.06.15). Measured locally on the published
+files:
+
+| CVEs with EPSS >= 0.10, whole EPSS population | 2026-11-24 | 2026-11-25 | 2026-11-26 |
+|---|---|---|---|
+| Count | **17,783** | **15,126** (-14.9%) | **15,134** |
+| 99th percentile of EPSS | 0.534 | 0.415 | 0.415 |
+
+A window that crosses 2026-11-25 averages two regimes, and the slide's last-day mean would
+describe the shift, not the vendors: Ivanti 0.81 -> 0.57 and Fortinet 0.59 -> 0.27 from one day to
+the next. 2026-11-24 closes the last 30-day window entirely before it. The `model_version`
+lineage column cannot catch a shift like this; a daily level check (the count of CVEs with EPSS
+>= 0.10) would.
+
 ## Summary (Part 2)
 
 | # | Decision | Decisive number |
 |---|---|---|
-| 11 | EPSS as the fact | **82.0 MB** in 30 days vs 1.5 MB for all of KEV |
-| 12 | Three layers | refined **259x** smaller than trusted in S3 |
-| 13 | Grain | **0** duplicates in 11,684,958 rows (measured on AWS) |
-| 14 | Composite natural keys | **291 = 291** vendors, no spelling split |
-| 15 | Daily partition | **29.3x** fewer bytes for a 1-day query (measured on AWS) |
-| 16 | Parquet + ZSTD | file 12.5% larger than CSV, yet the question reads **1.44x** less |
-| 17 | Cost target in bytes | <= 16,384 B per day (491,520 B over 30 days); refined read **164,258 B** (3.0x under), trusted 118x over |
-| 18 | SQL in Athena | **39x** cheaper than Glue ETL; backfill read raw once, not twice |
-| 19 | Partition overwrite | re-load **398,142 -> 398,142** (append would double) |
-| 20 | Incremental + backfill | one batch **3.8x** cheaper than daily loads |
-| 21 | Point-in-time | **35** CVEs misplaced without the rule |
-| 22 | Lake Formation | **9 of 9** combinations match, **0** S3 actions on personas |
-| 23 | Guardrails | **200 MB** / **100 MB** (measured headroom 2.5x / 1.8x) |
-| 24 | Destroy | **74** resources created from scratch and **74** destroyed, **0** orphans in 18 checked in AWS |
-| 25 | Minimum sample | average only with n >= **10**: largest change 0.09 in 30 days, vs 0.69 with n < 10 |
-| 26 | Window anchored on data | with `current_date`, the count would fall from 313 to **302** by delivery, with no new data |
+| 11 | EPSS as the fact | **84.9 MB** in 30 days vs 1.5 MB for all of KEV |
+| 12 | Three layers | refined **264x** smaller than trusted in S3 |
+| 13 | Grain | **0** duplicates in 12,107,444 rows (measured on AWS) |
+| 14 | Composite natural keys | **303 = 303** vendors, no spelling split |
+| 15 | Daily partition | **28.6x** fewer bytes for a 1-day query (measured on AWS) |
+| 16 | Parquet + ZSTD | file 12.8% larger than CSV, yet the question reads **1.44x** less |
+| 17 | Cost target in bytes | <= 16,384 B per day (491,520 B over 30 days); refined read **167,244 B** (2.9x under), trusted 122x over |
+| 18 | SQL in Athena | **38x** cheaper than Glue ETL; backfill read raw once, not twice |
+| 19 | Partition overwrite | re-load **411,908 -> 411,908** (append would double) |
+| 20 | Incremental + backfill | one batch **3.7x** cheaper than daily loads |
+| 21 | Point-in-time | **47** CVEs misplaced without the rule |
+| 22 | Lake Formation | **9 of 9** combinations match; **9 of 9** direct S3 reads denied |
+| 23 | Guardrails | **200 MB** / **100 MB** (measured headroom 2.4x / 1.8x) |
+| 24 | Destroy | **74** resources created from scratch and **74** destroyed, **0** orphans in 19 checked in AWS |
+| 25 | Minimum sample | average only with n >= **10**: largest change 0.05 in 30 days, vs 0.64 with n < 10 |
+| 26 | Window anchored on data | 332 anchored; with `current_date`, **342** today and **339** at delivery, with no new data |

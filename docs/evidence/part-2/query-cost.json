@@ -1,22 +1,22 @@
 {
-  "run_id": "20261102T051658Z",
+  "run_id": "20261126T150713Z",
   "query": "top vendors by KEV CVEs added in the last 12 months, with their EPSS over the window",
   "layer": "refined",
   "window": {
-    "first_day": "2026-10-01",
-    "last_day": "2026-10-30",
+    "first_day": "2026-10-26",
+    "last_day": "2026-11-24",
     "partitions": 30
   },
-  "kev_catalog_date": "2026-10-30",
+  "kev_catalog_date": "2026-11-25",
   "region": "us-east-1",
   "workgroup": "eda262-g07-wg",
-  "measured_at": "2026-11-02T05:26:19Z",
-  "execution_id": "754fe773-ddd2-459e-b6e7-8ee5ba8194a7",
-  "data_scanned_bytes": 164258,
+  "measured_at": "2026-11-26T15:19:54Z",
+  "execution_id": "4f609908-4603-4a5d-b013-758403c17b07",
+  "data_scanned_bytes": 167244,
   "billed_bytes": 10485760,
   "athena_min_billed_bytes": 10485760,
-  "engine_execution_ms": 1023,
-  "total_execution_ms": 1211,
+  "engine_execution_ms": 1096,
+  "total_execution_ms": 1264,
   "price_per_tb_usd": "5.00",
   "cost_usd": "0.00004768",
   "cost_target": {
@@ -26,15 +26,15 @@
     "met": true
   },
   "grain_check": {
-    "execution_id": "e49be560-6bc8-4ce6-a539-0de06aee2f5b",
+    "execution_id": "21f47fae-2e53-4a76-b43a-6b94cb802bbb",
     "duplicate_rows": 0
   },
   "sample_stability": {
-    "execution_id": "d3ec096e-82fe-4a16-a16f-de96d33ea746"
+    "execution_id": "3c0fc32b-f2ef-4fc9-ab7b-887562478f0d"
   },
   "result_files_sha256": {
-    "business-question-result.csv": "61d7da3b00ea33a392cf73720ff6b04384463cc96026d0e8361b72cba724d8fd",
-    "grain-check-result.csv": "c222d8eac45f90d45a7e17533cfed7edc40602ff849a0c92eff9c48d2075eb12",
-    "epss-sample-stability.csv": "ae4277fec40619abbfd81b8f2ef8c4db5cf7e5b3b897833ea1cc6f53ba052509"
+    "business-question-result.csv": "4401e9cce8d7570cda09b164cb92236ed6d69eff51d8c50da7202c9b89c04461",
+    "grain-check-result.csv": "8ef73d1bf25fc1c351482ebd3a012e29bdd54da6eeb6f958f98078ebaaaf4813",
+    "epss-sample-stability.csv": "f7f23c760c70694abe72574192937eadef58adbca905f450367fed4afac7157d"
   }
 }

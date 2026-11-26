@@ -17,10 +17,10 @@ responder isso no Athena?
 > **Status.** A Parte 1 (AV1) foi entregue e apresentada em 05/10/2026 — tag assinada
 > [`av1-entrega`](https://github.com/brunoribeirol/eda262-projeto-g07/tree/av1-entrega).
 > A Parte 2 (AV2, prazo 02/12/2026) está implementada em `parte-2/` e `scripts/part-2/`. Execução
-> de referência `20261102T051658Z` (us-east-1, janela EPSS de 01/10 a 30/10/2026): 74 recursos
-> criados do zero, meta de custo cumprida (164.258 B varridos contra 491.520 B, USD 0,00004768),
-> respostas idênticas nas três camadas, idempotência e matriz de acesso de 9 células comprovadas,
-> aceite 44/44 e destroy dos mesmos 74 recursos, sem órfãos. Todo número das decisões e das
+> de referência `20261126T150713Z` (us-east-1, janela EPSS de 26/10 a 24/11/2026): 74 recursos
+> criados do zero, meta de custo cumprida (167.244 B varridos contra 491.520 B, USD 0,00004768),
+> respostas idênticas nas três camadas, idempotência, matriz de acesso de 9 células e 9 de 9
+> leituras diretas no S3 negadas, aceite 48/48 e destroy dos mesmos 74 recursos, sem órfãos. Todo número das decisões e das
 > apresentações sai dessa execução.
 
 > **Sobre idioma.** Código, identificadores, comentários e documentação estão em inglês.

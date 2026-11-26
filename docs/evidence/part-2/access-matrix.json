@@ -1,11 +1,11 @@
 {
-  "run_id": "20261102T051658Z",
-  "checked_at_utc": "2026-11-02T05:29:01Z",
+  "run_id": "20261126T150713Z",
+  "checked_at_utc": "2026-11-26T15:24:01Z",
   "enforced_by": "AWS Lake Formation (identical IAM policy for every persona)",
   "probes": {
-    "raw": "kev_records@2026-10-30",
-    "trusted": "kev_vulnerabilities@2026-10-30",
-    "refined": "vendor_exposure_daily@2026-10-30"
+    "raw": "kev_records@2026-11-25",
+    "trusted": "kev_vulnerabilities@2026-11-25",
+    "refined": "vendor_exposure_daily@2026-11-24"
   },
   "checks": 9,
   "matches": 9,
@@ -18,7 +18,7 @@
       "expected": "denied",
       "actual": "denied",
       "match": true,
-      "execution_id": "a2d5540e-46fb-4698-b8c8-57b74b5ef863",
+      "execution_id": "1d03c992-bef7-427a-9fc4-fae964b8916e",
       "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_raw  "
     },
     {
@@ -27,7 +27,7 @@
       "expected": "denied",
       "actual": "denied",
       "match": true,
-      "execution_id": "7946cbfc-678d-4085-97b9-eb085833ee0c",
+      "execution_id": "62ec3262-7cd4-4b92-9703-26f5b7e3d2ef",
       "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_trusted  "
     },
     {
@@ -36,7 +36,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "ca7ce894-e6b3-4905-86aa-cbc3ee09cd5d",
+      "execution_id": "860c3a32-64b2-44da-ac09-78020c16c001",
       "reason": ""
     },
     {
@@ -45,7 +45,7 @@
       "expected": "denied",
       "actual": "denied",
       "match": true,
-      "execution_id": "0a417ca6-0597-4be1-bfd6-3d0bb3daa342",
+      "execution_id": "f0868d83-e241-463b-a432-13eaacf23382",
       "reason": "Insufficient permissions to execute the query. Insufficient Lake Formation permission(s): Required Describe on eda262_g07_raw  "
     },
     {
@@ -54,7 +54,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "1f27775a-ea1f-4a0a-ab02-bd6a5f6c4605",
+      "execution_id": "041a2ad4-93fd-4119-9d10-ffcb23a98709",
       "reason": ""
     },
     {
@@ -63,7 +63,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "bef17ba3-1ccb-4edb-87a9-6cea46847f3e",
+      "execution_id": "581068d2-c388-4217-98d0-0b6597b68dd4",
       "reason": ""
     },
     {
@@ -72,7 +72,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "ab81164e-f770-4ebb-808d-af2d50aeb8b1",
+      "execution_id": "95f9ed26-a9f0-4eb4-8c51-d4e2f2a957a1",
       "reason": ""
     },
     {
@@ -81,7 +81,7 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "02ad66d7-bce1-43e0-b70f-f6c37dd22a19",
+      "execution_id": "bd06e174-1c11-43fb-a863-d27934451cf9",
       "reason": ""
     },
     {
@@ -90,8 +90,89 @@
       "expected": "granted",
       "actual": "granted",
       "match": true,
-      "execution_id": "1b514e16-f6bc-40d2-86b1-48f146baa547",
+      "execution_id": "7b63d188-3f1a-48f3-bc1a-3c7f1a3607a4",
       "reason": ""
     }
-  ]
+  ],
+  "s3_direct": {
+    "probe": "s3api list-objects-v2 --max-keys 1 on the layer bucket, as the persona",
+    "operator_control": "listed every layer bucket",
+    "checks": 9,
+    "denied": 9,
+    "all_denied": true,
+    "results": [
+      {
+        "persona": "business-user",
+        "layer": "raw",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "business-user",
+        "layer": "trusted",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "business-user",
+        "layer": "refined",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "data-analyst",
+        "layer": "raw",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "data-analyst",
+        "layer": "trusted",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "data-analyst",
+        "layer": "refined",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "data-engineer",
+        "layer": "raw",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "data-engineer",
+        "layer": "trusted",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      },
+      {
+        "persona": "data-engineer",
+        "layer": "refined",
+        "expected": "denied",
+        "actual": "denied",
+        "match": true,
+        "error_code": "AccessDenied"
+      }
+    ]
+  }
 }

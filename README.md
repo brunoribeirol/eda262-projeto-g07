@@ -16,10 +16,10 @@ vulnerabilities to be exploited over a 30-day window — and what does answering
 > **Status.** Part 1 (AV1) was submitted and presented on 2026-10-05 — signed tag
 > [`av1-entrega`](https://github.com/brunoribeirol/eda262-projeto-g07/tree/av1-entrega).
 > Part 2 (AV2, due 2026-12-02) is implemented in `parte-2/` and `scripts/part-2/`. Reference run
-> `20261102T051658Z` (us-east-1, EPSS window 2026-10-01 to 2026-10-30): 74 resources applied from
-> scratch, cost target met (164,258 B scanned against 491,520 B, USD 0.00004768), identical answers
-> on the three layers, idempotency and the 9-cell access matrix proven, acceptance 44/44, teardown
-> of the same 74 resources with 0 orphans. Every figure in the decisions and the decks comes from
+> `20261126T150713Z` (us-east-1, EPSS window 2026-10-26 to 2026-11-24): 74 resources applied from
+> scratch, cost target met (167,244 B scanned against 491,520 B, USD 0.00004768), identical answers
+> on the three layers, idempotency, the 9-cell access matrix and 9 of 9 direct S3 reads denied,
+> acceptance 48/48, teardown of the same 74 resources with 0 orphans. Every figure in the decisions and the decks comes from
 > that run.
 
 > **A note on language.** Code, identifiers, comments and documentation are in English.

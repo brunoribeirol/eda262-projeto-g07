@@ -287,7 +287,7 @@ tr.lead td { color: var(--accent); }
   <div class="sub">
     O lake da Parte 1 ganhou volume real (EPSS), três camadas, Parquet particionado, carga
     idempotente e incremental e acesso por camada no Lake Formation &mdash; e responde lendo
-    164.258&nbsp;bytes, 3&times; abaixo de uma meta declarada em bytes.
+    167.244&nbsp;bytes, 2,9&times; abaixo de uma meta declarada em bytes.
   </div>
   <div class="meta" style="margin-top:0.42in">
     <b>Grupo g07</b> &nbsp;·&nbsp; CESAR School &nbsp;·&nbsp; 2026.2<br>
@@ -306,7 +306,7 @@ tr.lead td { color: var(--accent); }
             <span class="num">1,5&nbsp;MB</span>: Parquet e partição sobre ele economizariam
             <b>US$&nbsp;0,00</b>.</li>
         <li><b>EPSS</b> (FIRST): a probabilidade de cada CVE ser explorada nos próximos 30 dias,
-            publicada <b>todo dia</b> para <span class="num">~389 mil</span> CVEs.</li>
+            publicada <b>todo dia</b> para <span class="num">~404 mil</span> CVEs.</li>
         <li>O cruzamento traz <b>informação</b>, não só volume: entre as já exploradas,
             separa as que continuam perigosas agora.</li>
       </ul>
@@ -317,13 +317,13 @@ tr.lead td { color: var(--accent); }
     </div>
     <div class="col col-narrow">
       <div class="stat-row" style="flex-direction:column;gap:0.3in">
-        <div class="stat"><div class="v" style="color:var(--accent)">82,0&nbsp;MB</div><div class="l">30 dias de EPSS (gzip) &mdash; acima do piso</div></div>
-        <div class="stat"><div class="v">11,7 mi</div><div class="l">linhas na janela de 30 dias</div></div>
-        <div class="stat"><div class="v">0,54 <span style="font-size:18pt" class="soft">vs</span> 0,0063</div><div class="l">EPSS mediano em 30/10: CVEs do KEV vs todas (86&times;)</div></div>
+        <div class="stat"><div class="v" style="color:var(--accent)">84,9&nbsp;MB</div><div class="l">30 dias de EPSS (gzip) &mdash; acima do piso</div></div>
+        <div class="stat"><div class="v">12,1 mi</div><div class="l">linhas na janela de 30 dias</div></div>
+        <div class="stat"><div class="v">0,54 <span style="font-size:18pt" class="soft">vs</span> 0,0061</div><div class="l">EPSS mediano em 24/11: CVEs do KEV vs todas (88&times;)</div></div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Cenário e pergunta &middot; EPSS de 01/10 a 30/10/2026 e KEV de 30/10/2026</span><span>g07 · EDA262 · Parte 2 · 2/8</span></div>
+  <div class="foot"><span>Cenário e pergunta &middot; EPSS de 26/10 a 24/11/2026 e KEV de 25/11/2026</span><span>g07 · EDA262 · Parte 2 · 2/8</span></div>
 </section>
 
 <!-- 3 · Emanuel -------------------------------------------------------------->
@@ -386,7 +386,7 @@ tr.lead td { color: var(--accent); }
     <div class="col col-narrow">
       <ul style="margin-top:0.04in">
         <li>IAM <b>idêntico</b> nos 3 perfis: a negação só pode vir do Lake Formation.</li>
-        <li><span class="num">0</span> permissões S3 nos buckets do lake.</li>
+        <li>S3 direto: <span class="num">9 de 9</span> leituras negadas (AccessDenied), com 0 permissões S3 nos buckets.</li>
         <li>Padrão <b>IAMAllowedPrincipals removido</b>: sem isso, os grants seriam decorativos.</li>
         <li>Um WorkGroup por perfil: resultados e histórico isolados.</li>
       </ul>
@@ -402,22 +402,22 @@ tr.lead td { color: var(--accent); }
     <div>
       <div class="owner">Partição diária (snapshot_date)</div>
       <div class="big">29&times;</div>
-      <div class="big-l">menos bytes numa consulta de 1 dia: <b>789.155&nbsp;B</b> contra
-        <b>23.094.812&nbsp;B</b> dos 30 dias.</div>
+      <div class="big-l">menos bytes numa consulta de 1 dia: <b>825.901&nbsp;B</b> contra
+        <b>23.640.972&nbsp;B</b> dos 30 dias.</div>
       <ul>
         <li>Grão <b>(cve_id, dia)</b>: <span class="num">0</span> duplicadas em
-            11.684.958 linhas.</li>
-        <li>Point-in-time: <span class="num">35</span> CVEs contadas no dia certo.</li>
+            12.107.444 linhas.</li>
+        <li>Point-in-time: <span class="num">47</span> CVEs contadas no dia certo.</li>
       </ul>
     </div>
     <div>
       <div class="owner">Carga idempotente e incremental</div>
-      <div class="big">398.142</div>
-      <div class="big-l">linhas antes e depois de recarregar 30/10. Só acrescentar
-        daria <b>796.284</b>.</div>
+      <div class="big">411.908</div>
+      <div class="big-l">linhas antes e depois de recarregar 24/11. Só acrescentar
+        daria <b>823.816</b>.</div>
       <ul>
         <li>Backfill de <span class="num">30</span> dias num único INSERT: leu a raw
-            <b>uma vez só</b> (82,0&nbsp;MB).</li>
+            <b>uma vez só</b> (84,9&nbsp;MB).</li>
         <li>Incremental pela marca d'água de cada camada.</li>
       </ul>
     </div>
@@ -432,18 +432,19 @@ tr.lead td { color: var(--accent); }
     <div class="col">
       <div class="chart">
         <div class="bar-head"><span class="h-label"></span><span class="h-track">CVEs exploradas novas em 12 meses</span><span class="h-extra">EPSS médio <span class="keep-case">(n)</span></span></div>
-        <div class="bar-row"><div class="bar-label">Microsoft</div><div class="bar-track"><div class="bar-fill lead" style="width:100%"></div></div><div class="bar-val lead">42</div><div class="bar-extra">0,45 <span class="soft">(390)</span></div></div>
-        <div class="bar-row"><div class="bar-label">Cisco</div><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><div class="bar-val">21</div><div class="bar-extra">0,35 <span class="soft">(102)</span></div></div>
-        <div class="bar-row"><div class="bar-label">Fortinet</div><div class="bar-track"><div class="bar-fill" style="width:28.6%"></div></div><div class="bar-val">12</div><div class="bar-extra">0,59 <span class="soft">(32)</span></div></div>
-        <div class="bar-row"><div class="bar-label">Google</div><div class="bar-track"><div class="bar-fill" style="width:26.2%"></div></div><div class="bar-val">11</div><div class="bar-extra">0,27 <span class="soft">(76)</span></div></div>
-        <div class="bar-row"><div class="bar-label">Apple</div><div class="bar-track"><div class="bar-fill" style="width:23.8%"></div></div><div class="bar-val">10</div><div class="bar-extra">0,14 <span class="soft">(95)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Microsoft</div><div class="bar-track"><div class="bar-fill lead" style="width:100%"></div></div><div class="bar-val lead">42</div><div class="bar-extra">0,46 <span class="soft">(391)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Cisco</div><div class="bar-track"><div class="bar-fill" style="width:54.8%"></div></div><div class="bar-val">23</div><div class="bar-extra">0,36 <span class="soft">(104)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Apple</div><div class="bar-track"><div class="bar-fill" style="width:26.2%"></div></div><div class="bar-val">11</div><div class="bar-extra">0,14 <span class="soft">(96)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Google</div><div class="bar-track"><div class="bar-fill" style="width:26.2%"></div></div><div class="bar-val">11</div><div class="bar-extra">0,27 <span class="soft">(77)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Fortinet</div><div class="bar-track"><div class="bar-fill" style="width:23.8%"></div></div><div class="bar-val">10</div><div class="bar-extra">0,59 <span class="soft">(32)</span></div></div>
         <div class="bar-row"><div class="bar-label">Linux</div><div class="bar-track"><div class="bar-fill" style="width:21.4%"></div></div><div class="bar-val">9</div><div class="bar-extra">0,24 <span class="soft">(32)</span></div></div>
-        <div class="bar-row"><div class="bar-label">Ivanti</div><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><div class="bar-val">8</div><div class="bar-extra lead">0,82 <span class="soft">(37)</span></div></div>
-        <div class="bar-row"><div class="bar-label">Adobe</div><div class="bar-track"><div class="bar-fill" style="width:16.7%"></div></div><div class="bar-val">7</div><div class="bar-extra">0,63 <span class="soft">(83)</span></div></div>
-        <div class="bar-row"><div class="bar-label">Citrix</div><div class="bar-track"><div class="bar-fill" style="width:14.3%"></div></div><div class="bar-val">6</div><div class="bar-extra">0,52 <span class="soft">(27)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Ivanti</div><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><div class="bar-val">8</div><div class="bar-extra lead">0,81 <span class="soft">(38)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Adobe</div><div class="bar-track"><div class="bar-fill" style="width:16.7%"></div></div><div class="bar-val">7</div><div class="bar-extra">0,65 <span class="soft">(83)</span></div></div>
+        <div class="bar-row"><div class="bar-label">Citrix</div><div class="bar-track"><div class="bar-fill" style="width:14.3%"></div></div><div class="bar-val">6</div><div class="bar-extra">0,54 <span class="soft">(27)</span></div></div>
+        <div class="bar-row"><div class="bar-label">SonicWall</div><div class="bar-track"><div class="bar-fill" style="width:14.3%"></div></div><div class="bar-val">6</div><div class="bar-extra">0,36 <span class="soft">(20)</span></div></div>
       </div>
       <div class="chart-note">
-        Ranking pelas CVEs exploradas adicionadas ao KEV nos 12 meses até 30/10/2026 (9 de 20,
+        Ranking pelas CVEs exploradas adicionadas ao KEV nos 12 meses até 24/11/2026 (10 de 24,
         com empates).
         EPSS médio de todas as CVEs exploradas do fabricante no último dia da janela; n = CVEs com
         EPSS. Média só com n&nbsp;&ge;&nbsp;10.
@@ -452,17 +453,17 @@ tr.lead td { color: var(--accent); }
     <div class="col col-narrow">
       <div class="kicker">Chance de exploração</div>
       <div class="hero" style="margin-top:0.12in">
-        <div class="v">0,82 <span class="soft" style="font-size:18pt">vs</span> 0,14</div>
-        <div class="l">Ivanti (37 CVEs) &nbsp;·&nbsp; Apple (95 CVEs)</div>
+        <div class="v">0,81 <span class="soft" style="font-size:18pt">vs</span> 0,14</div>
+        <div class="l">Ivanti (38 CVEs) &nbsp;·&nbsp; Apple (96 CVEs)</div>
       </div>
       <p style="font-size:13pt;margin-top:0.24in;line-height:1.5">
         A Ivanti é só a 7ª em volume, mas o portfólio explorado dela tem a maior chance de
-        exploração do ranking &mdash; 6&times; a da Apple. As duas amostras são grandes: não é
-        efeito de meia dúzia de CVEs.
+        exploração entre os 10 primeiros &mdash; 6&times; a da Apple. As duas amostras são grandes:
+        não é efeito de meia dúzia de CVEs. Logo abaixo, a Apache (11ª) chega a 0,92 em 43.
       </p>
     </div>
   </div>
-  <div class="foot"><span>Resultado &middot; janela 01/10 a 30/10/2026</span><span>g07 · EDA262 · Parte 2 · 6/8</span></div>
+  <div class="foot"><span>Resultado &middot; janela 26/10 a 24/11/2026</span><span>g07 · EDA262 · Parte 2 · 6/8</span></div>
 </section>
 
 <!-- 7 · Vinícius ------------------------------------------------------------->
@@ -471,24 +472,24 @@ tr.lead td { color: var(--accent); }
   <div class="body">
     <div class="col">
       <div class="hero" style="margin-top:0.05in">
-        <div class="v">164.258&nbsp;B</div>
-        <div class="l">lidos de no máximo <b>491.520&nbsp;B</b> (16&nbsp;KiB &times; 30 dias) &mdash; <b>3&times;</b> abaixo da meta &middot; US$&nbsp;0,00004768</div>
+        <div class="v">167.244&nbsp;B</div>
+        <div class="l">lidos de no máximo <b>491.520&nbsp;B</b> (16&nbsp;KiB &times; 30 dias) &mdash; <b>2,9&times;</b> abaixo da meta &middot; US$&nbsp;0,00004768</div>
       </div>
       <div class="kicker" style="margin-top:0.42in">A mesma pergunta, por camada (bytes lidos)</div>
       <div class="chart" style="margin-top:0.08in">
-        <div class="bar-row"><div class="bar-label">raw</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">83,4&nbsp;MB</div></div>
-        <div class="bar-row"><div class="bar-label">trusted</div><div class="bar-track"><div class="bar-fill" style="width:69.3%"></div></div><div class="bar-val">57,9&nbsp;MB</div></div>
-        <div class="bar-row"><div class="bar-label">refined</div><div class="bar-track"><div class="bar-fill lead" style="width:0.2%;min-width:3px"></div></div><div class="bar-val lead">0,16&nbsp;MB</div></div>
+        <div class="bar-row"><div class="bar-label">raw</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">86,4&nbsp;MB</div></div>
+        <div class="bar-row"><div class="bar-label">trusted</div><div class="bar-track"><div class="bar-fill" style="width:69.2%"></div></div><div class="bar-val">59,8&nbsp;MB</div></div>
+        <div class="bar-row"><div class="bar-label">refined</div><div class="bar-track"><div class="bar-fill lead" style="width:0.2%;min-width:3px"></div></div><div class="bar-val lead">0,17&nbsp;MB</div></div>
       </div>
       <div class="chart-note">As três respostas saíram <b>idênticas, byte a byte</b>.</div>
     </div>
     <div class="col col-narrow">
       <ul style="margin-top:0.05in">
         <li>Meta em <b>bytes</b>: abaixo de 10&nbsp;MB toda consulta paga o mesmo piso. Em dólar,
-            qualquer layout passaria; a trusted fica <span class="num">118&times;</span> acima.</li>
-        <li>Refined lê <span class="num">508&times;</span> menos que a raw, mas o custo cai só
-            <span class="num">8,0&times;</span>: é o piso.</li>
-        <li>O Parquet do Athena ficou <b>12,5% maior</b> que o CSV e mesmo assim leu
+            qualquer layout passaria; a trusted fica <span class="num">122&times;</span> acima.</li>
+        <li>Refined lê <span class="num">516&times;</span> menos que a raw, mas o custo cai só
+            <span class="num">8,2&times;</span>: é o piso.</li>
+        <li>O Parquet do Athena ficou <b>12,8% maior</b> que o CSV e mesmo assim leu
             <span class="num">1,44&times;</span> menos: custo é o que se lê.</li>
       </ul>
     </div>
@@ -511,7 +512,7 @@ tr.lead td { color: var(--accent); }
     </div>
     <div class="panel">
       <div class="cap"><span class="n">2</span> &nbsp;backfill de 30 dias pelas três camadas</div>
-      <div class="code">==> EPSS range 2026-10-01 .. 2026-10-30: 30 day(s)
+      <div class="code">==> EPSS range 2026-10-26 .. 2026-11-24: 30 day(s)
   OK 30 file(s) passed the header, date and
      integrity gates
   OK trusted: every day landed with its source
@@ -520,23 +521,23 @@ tr.lead td { color: var(--accent); }
     </div>
     <div class="panel">
       <div class="cap"><span class="n">3</span> &nbsp;consulta com custo medido, nas três camadas</div>
-      <div class="code">  raw      83441797 bytes scanned  -> USD 0.00037945
-  trusted  57851669 bytes scanned  -> USD 0.00026308
-  refined  <span class="hl">164258 bytes scanned  -> USD 0.00004768</span>
+      <div class="code">  raw      86362462 bytes scanned  -> USD 0.00039273
+  trusted  59804106 bytes scanned  -> USD 0.00027196
+  refined  <span class="hl">167244 bytes scanned  -> USD 0.00004768</span>
   answers identical across layers: true
-  OK cost target met: 164258 bytes scanned &lt;= 491520
+  OK cost target met: 167244 bytes scanned &lt;= 491520
      (16384 B x 30 days; USD 0.00004768)</div>
     </div>
     <div class="panel">
       <div class="cap"><span class="n">4</span> &nbsp;aceite (verifica.sh) e destroy</div>
-      <div class="code">Resultado: <span class="hl">44 PASSA</span> / 0 FALHA  (total: 44 criterios)
+      <div class="code">Resultado: <span class="hl">48 PASSA</span> / 0 FALHA  (total: 48 criterios)
 
 <span class="hl">Destroy complete! Resources: 74 destroyed</span>.
   OK No orphaned resources remain
-     (18 resources checked)</div>
+     (19 resources checked)</div>
     </div>
   </div>
-  <div class="foot"><span>Execução 20261102T051658Z &middot; evidências e DECISOES.md: github.com/brunoribeirol/eda262-projeto-g07</span><span>g07 · EDA262 · Parte 2 · 8/8</span></div>
+  <div class="foot"><span>Execução 20261126T150713Z &middot; evidências e DECISOES.md: github.com/brunoribeirol/eda262-projeto-g07</span><span>g07 · EDA262 · Parte 2 · 8/8</span></div>
 </section>
 
 </body>

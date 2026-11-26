@@ -1,203 +1,28 @@
 {
-  "run_id": "20261102T051658Z",
+  "run_id": "20261126T150713Z",
   "table": "refined.vendor_exposure_daily",
   "grain": "one row per (vendor_project, snapshot_date)",
   "range": {
-    "from": "2026-10-01",
-    "to": "2026-10-30"
+    "from": "2026-10-26",
+    "to": "2026-11-24"
   },
-  "kev_catalog_date": "2026-10-30",
-  "built_at_utc": "2026-11-02 05:23:53",
+  "kev_catalog_date": "2026-11-25",
+  "built_at_utc": "2026-11-26 15:17:05",
   "partitions": 30,
-  "rows": 8647,
+  "rows": 8815,
   "inserts": [
     {
-      "from": "2026-10-01",
-      "to": "2026-10-30",
+      "from": "2026-10-26",
+      "to": "2026-11-24",
       "partitions": 30,
-      "execution_id": "af79963c-d2d6-48e3-9584-7105cea12f86",
-      "data_scanned_bytes": 57860819,
-      "engine_execution_ms": 6425,
-      "total_execution_ms": 6684,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/af79963c-d2d6-48e3-9584-7105cea12f86"
+      "execution_id": "f39e8998-16b7-40f7-ad7d-fc918eec9ea9",
+      "data_scanned_bytes": 59813256,
+      "engine_execution_ms": 7337,
+      "total_execution_ms": 7605,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/f39e8998-16b7-40f7-ad7d-fc918eec9ea9"
     }
   ],
   "days": [
-    {
-      "snapshot_date": "2026-10-01",
-      "rows": 283,
-      "vendors": 283,
-      "kev_cves": 1731,
-      "epss_scored_cves": 1730
-    },
-    {
-      "snapshot_date": "2026-10-02",
-      "rows": 284,
-      "vendors": 284,
-      "kev_cves": 1733,
-      "epss_scored_cves": 1733
-    },
-    {
-      "snapshot_date": "2026-10-03",
-      "rows": 284,
-      "vendors": 284,
-      "kev_cves": 1733,
-      "epss_scored_cves": 1733
-    },
-    {
-      "snapshot_date": "2026-10-04",
-      "rows": 284,
-      "vendors": 284,
-      "kev_cves": 1734,
-      "epss_scored_cves": 1734
-    },
-    {
-      "snapshot_date": "2026-10-05",
-      "rows": 284,
-      "vendors": 284,
-      "kev_cves": 1734,
-      "epss_scored_cves": 1734
-    },
-    {
-      "snapshot_date": "2026-10-06",
-      "rows": 284,
-      "vendors": 284,
-      "kev_cves": 1734,
-      "epss_scored_cves": 1734
-    },
-    {
-      "snapshot_date": "2026-10-07",
-      "rows": 284,
-      "vendors": 284,
-      "kev_cves": 1734,
-      "epss_scored_cves": 1734
-    },
-    {
-      "snapshot_date": "2026-10-08",
-      "rows": 288,
-      "vendors": 288,
-      "kev_cves": 1739,
-      "epss_scored_cves": 1739
-    },
-    {
-      "snapshot_date": "2026-10-09",
-      "rows": 288,
-      "vendors": 288,
-      "kev_cves": 1739,
-      "epss_scored_cves": 1739
-    },
-    {
-      "snapshot_date": "2026-10-10",
-      "rows": 288,
-      "vendors": 288,
-      "kev_cves": 1739,
-      "epss_scored_cves": 1739
-    },
-    {
-      "snapshot_date": "2026-10-11",
-      "rows": 288,
-      "vendors": 288,
-      "kev_cves": 1739,
-      "epss_scored_cves": 1739
-    },
-    {
-      "snapshot_date": "2026-10-12",
-      "rows": 288,
-      "vendors": 288,
-      "kev_cves": 1739,
-      "epss_scored_cves": 1739
-    },
-    {
-      "snapshot_date": "2026-10-13",
-      "rows": 288,
-      "vendors": 288,
-      "kev_cves": 1741,
-      "epss_scored_cves": 1739
-    },
-    {
-      "snapshot_date": "2026-10-14",
-      "rows": 289,
-      "vendors": 289,
-      "kev_cves": 1745,
-      "epss_scored_cves": 1743
-    },
-    {
-      "snapshot_date": "2026-10-15",
-      "rows": 289,
-      "vendors": 289,
-      "kev_cves": 1746,
-      "epss_scored_cves": 1746
-    },
-    {
-      "snapshot_date": "2026-10-16",
-      "rows": 289,
-      "vendors": 289,
-      "kev_cves": 1748,
-      "epss_scored_cves": 1748
-    },
-    {
-      "snapshot_date": "2026-10-17",
-      "rows": 289,
-      "vendors": 289,
-      "kev_cves": 1748,
-      "epss_scored_cves": 1747
-    },
-    {
-      "snapshot_date": "2026-10-18",
-      "rows": 289,
-      "vendors": 289,
-      "kev_cves": 1748,
-      "epss_scored_cves": 1747
-    },
-    {
-      "snapshot_date": "2026-10-19",
-      "rows": 289,
-      "vendors": 289,
-      "kev_cves": 1748,
-      "epss_scored_cves": 1747
-    },
-    {
-      "snapshot_date": "2026-10-20",
-      "rows": 290,
-      "vendors": 290,
-      "kev_cves": 1754,
-      "epss_scored_cves": 1754
-    },
-    {
-      "snapshot_date": "2026-10-21",
-      "rows": 290,
-      "vendors": 290,
-      "kev_cves": 1754,
-      "epss_scored_cves": 1754
-    },
-    {
-      "snapshot_date": "2026-10-22",
-      "rows": 290,
-      "vendors": 290,
-      "kev_cves": 1754,
-      "epss_scored_cves": 1754
-    },
-    {
-      "snapshot_date": "2026-10-23",
-      "rows": 291,
-      "vendors": 291,
-      "kev_cves": 1756,
-      "epss_scored_cves": 1756
-    },
-    {
-      "snapshot_date": "2026-10-24",
-      "rows": 291,
-      "vendors": 291,
-      "kev_cves": 1756,
-      "epss_scored_cves": 1756
-    },
-    {
-      "snapshot_date": "2026-10-25",
-      "rows": 291,
-      "vendors": 291,
-      "kev_cves": 1756,
-      "epss_scored_cves": 1756
-    },
     {
       "snapshot_date": "2026-10-26",
       "rows": 291,
@@ -232,6 +57,181 @@
       "vendors": 291,
       "kev_cves": 1766,
       "epss_scored_cves": 1765
+    },
+    {
+      "snapshot_date": "2026-10-31",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1766,
+      "epss_scored_cves": 1765
+    },
+    {
+      "snapshot_date": "2026-11-01",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1766,
+      "epss_scored_cves": 1765
+    },
+    {
+      "snapshot_date": "2026-11-02",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1766,
+      "epss_scored_cves": 1765
+    },
+    {
+      "snapshot_date": "2026-11-03",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1767,
+      "epss_scored_cves": 1766
+    },
+    {
+      "snapshot_date": "2026-11-04",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1768,
+      "epss_scored_cves": 1768
+    },
+    {
+      "snapshot_date": "2026-11-05",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1768,
+      "epss_scored_cves": 1768
+    },
+    {
+      "snapshot_date": "2026-11-06",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1769,
+      "epss_scored_cves": 1768
+    },
+    {
+      "snapshot_date": "2026-11-07",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1769,
+      "epss_scored_cves": 1769
+    },
+    {
+      "snapshot_date": "2026-11-08",
+      "rows": 291,
+      "vendors": 291,
+      "kev_cves": 1769,
+      "epss_scored_cves": 1769
+    },
+    {
+      "snapshot_date": "2026-11-09",
+      "rows": 293,
+      "vendors": 293,
+      "kev_cves": 1773,
+      "epss_scored_cves": 1773
+    },
+    {
+      "snapshot_date": "2026-11-10",
+      "rows": 294,
+      "vendors": 294,
+      "kev_cves": 1779,
+      "epss_scored_cves": 1777
+    },
+    {
+      "snapshot_date": "2026-11-11",
+      "rows": 294,
+      "vendors": 294,
+      "kev_cves": 1779,
+      "epss_scored_cves": 1779
+    },
+    {
+      "snapshot_date": "2026-11-12",
+      "rows": 294,
+      "vendors": 294,
+      "kev_cves": 1779,
+      "epss_scored_cves": 1779
+    },
+    {
+      "snapshot_date": "2026-11-13",
+      "rows": 295,
+      "vendors": 295,
+      "kev_cves": 1781,
+      "epss_scored_cves": 1781
+    },
+    {
+      "snapshot_date": "2026-11-14",
+      "rows": 295,
+      "vendors": 295,
+      "kev_cves": 1781,
+      "epss_scored_cves": 1781
+    },
+    {
+      "snapshot_date": "2026-11-15",
+      "rows": 295,
+      "vendors": 295,
+      "kev_cves": 1781,
+      "epss_scored_cves": 1781
+    },
+    {
+      "snapshot_date": "2026-11-16",
+      "rows": 295,
+      "vendors": 295,
+      "kev_cves": 1781,
+      "epss_scored_cves": 1781
+    },
+    {
+      "snapshot_date": "2026-11-17",
+      "rows": 296,
+      "vendors": 296,
+      "kev_cves": 1782,
+      "epss_scored_cves": 1782
+    },
+    {
+      "snapshot_date": "2026-11-18",
+      "rows": 298,
+      "vendors": 298,
+      "kev_cves": 1786,
+      "epss_scored_cves": 1786
+    },
+    {
+      "snapshot_date": "2026-11-19",
+      "rows": 298,
+      "vendors": 298,
+      "kev_cves": 1786,
+      "epss_scored_cves": 1786
+    },
+    {
+      "snapshot_date": "2026-11-20",
+      "rows": 298,
+      "vendors": 298,
+      "kev_cves": 1790,
+      "epss_scored_cves": 1790
+    },
+    {
+      "snapshot_date": "2026-11-21",
+      "rows": 298,
+      "vendors": 298,
+      "kev_cves": 1790,
+      "epss_scored_cves": 1790
+    },
+    {
+      "snapshot_date": "2026-11-22",
+      "rows": 298,
+      "vendors": 298,
+      "kev_cves": 1790,
+      "epss_scored_cves": 1790
+    },
+    {
+      "snapshot_date": "2026-11-23",
+      "rows": 299,
+      "vendors": 299,
+      "kev_cves": 1792,
+      "epss_scored_cves": 1792
+    },
+    {
+      "snapshot_date": "2026-11-24",
+      "rows": 301,
+      "vendors": 301,
+      "kev_cves": 1795,
+      "epss_scored_cves": 1794
     }
   ]
 }

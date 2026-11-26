@@ -1,45 +1,45 @@
 {
-  "run_id": "20261102T051658Z",
+  "run_id": "20261126T150713Z",
   "source": "first-epss",
   "mode": "explicit",
   "range": {
-    "from": "2026-10-30",
-    "to": "2026-10-30"
+    "from": "2026-11-24",
+    "to": "2026-11-24"
   },
   "partitions": 1,
-  "ingested_at_utc": "2026-11-02 05:27:17",
+  "ingested_at_utc": "2026-11-26 15:21:20",
   "totals": {
-    "source_rows": 398142,
-    "source_gzip_bytes": 2792728,
-    "trusted_rows": 398142,
-    "insert_scanned_bytes": 2792728
+    "source_rows": 411908,
+    "source_gzip_bytes": 2885252,
+    "trusted_rows": 411908,
+    "insert_scanned_bytes": 2885252
   },
   "grain": "one row per (cve_id, snapshot_date)",
   "days": [
     {
-      "snapshot_date": "2026-10-30",
-      "source_rows": 398142,
-      "source_gzip_bytes": 2792728,
+      "snapshot_date": "2026-11-24",
+      "source_rows": 411908,
+      "source_gzip_bytes": 2885252,
       "model_version": "v2026.06.15"
     }
   ],
   "trusted": [
     {
-      "snapshot_date": "2026-10-30",
-      "rows": 398142,
-      "distinct_cve_id": 398142
+      "snapshot_date": "2026-11-24",
+      "rows": 411908,
+      "distinct_cve_id": 411908
     }
   ],
   "trusted_inserts": [
     {
-      "from": "2026-10-30",
-      "to": "2026-10-30",
+      "from": "2026-11-24",
+      "to": "2026-11-24",
       "partitions": 1,
-      "execution_id": "842309b7-c8d7-43b3-99d4-fcd27d3eea82",
-      "data_scanned_bytes": 2792728,
-      "engine_execution_ms": 3067,
-      "total_execution_ms": 3243,
-      "output_location": "s3://eda262-g07-athena-results/pipeline/842309b7-c8d7-43b3-99d4-fcd27d3eea82"
+      "execution_id": "736f7550-0da6-4e20-9ab1-34c8fac2796b",
+      "data_scanned_bytes": 2885252,
+      "engine_execution_ms": 3396,
+      "total_execution_ms": 3641,
+      "output_location": "s3://eda262-g07-athena-results/pipeline/736f7550-0da6-4e20-9ab1-34c8fac2796b"
     }
   ]
 }

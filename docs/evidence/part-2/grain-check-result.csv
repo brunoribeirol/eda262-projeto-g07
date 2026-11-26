@@ -1,4 +1,4 @@
 "table_name","grain","total_rows","distinct_keys","duplicate_rows"
-"refined.vendor_exposure_daily","vendor_project, snapshot_date","8647","8647","0"
-"trusted.epss_scores","cve_id, snapshot_date","11684958","11684958","0"
-"trusted.kev_vulnerabilities","cve_id, catalog_date","1766","1766","0"
+"refined.vendor_exposure_daily","vendor_project, snapshot_date","8815","8815","0"
+"trusted.epss_scores","cve_id, snapshot_date","12107444","12107444","0"
+"trusted.kev_vulnerabilities","cve_id, catalog_date","1805","1805","0"
